@@ -3,34 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" href="icon.ico" type="image/x-icon" />
-  <title>📊 Admin Analytics</title>
+  <title>Admin Dashboard - Library</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
 
-  <h1 class="text-3xl font-bold mb-6 text-center">📊 Admin Analytics Dashboard</h1>
+  <h1 class="text-2xl font-bold mb-6 text-center">📊 Admin Dashboard - Library</h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-    <!-- Leaderboard Readers -->
-    <div class="bg-white shadow-md rounded-lg p-4">
-      <h2 class="text-xl font-semibold mb-3">👥 Top Readers</h2>
+  <!-- === GRID: Leaderboard + Charts === -->
+  <div class="grid gap-6 grid-cols-1 md:grid-cols-2 mb-10">
+    
+    <!-- Leaderboard -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-semibold mb-3">🏆 Top Readers</h2>
       <ul id="leaderboardList" class="space-y-2"></ul>
     </div>
 
-    <!-- Top Books -->
-    <div class="bg-white shadow-md rounded-lg p-4">
-      <h2 class="text-xl font-semibold mb-3">📚 Top Books (Most Reads)</h2>
-      <canvas id="booksChart" height="200"></canvas>
+    <!-- Most Read Books Chart -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-semibold mb-3">📖 Most Read Books</h2>
+      <canvas id="booksChart"></canvas>
+    </div>
+
+    <!-- Section Distribution -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-semibold mb-3">📂 Reads by Section</h2>
+      <canvas id="sectionsChart"></canvas>
     </div>
 
   </div>
 
+  <!-- === Manage Books === -->
+  <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
+
+    <!-- Add/Edit Book Form -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
+      <form id="bookForm" class="grid gap-3">
+        <input id="bookId" type="hidden" /> <!-- hidden for edit -->
+
+        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded" required />
+        <input id="authorInput" type="text" placeholder="Author" class="p-2 border rounded" required />
+        <input id="pdfInput" type="url" placeholder="PDF URL" class="p-2 border rounded" required />
+
+        <select id="sectionInput" class="p-2 border rounded" required>
+          <option value="">-- Select Section --</option>
+          <option value="members">Members</option>
+          <option value="readers">Readers</option>
+        </select>
+
+        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded" />
+
+        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Save Book</button>
+      </form>
+    </div>
+
+    <!-- Books Table -->
+    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+      <h2 class="text-lg font-semibold mb-4">📖 Books List</h2>
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border">Title</th>
+            <th class="p-2 border">Author</th>
+            <th class="p-2 border">Section</th>
+            <th class="p-2 border">Reads</th>
+            <th class="p-2 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="booksTable"></tbody>
+      </table>
+    </div>
+  </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import { 
+  getFirestore, collection, query, orderBy, limit, onSnapshot, getDocs,
+  addDoc, updateDoc, deleteDoc, doc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
@@ -43,7 +95,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ================== Leaderboard Readers ==================
+// ===== Leaderboard =====
 const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
 onSnapshot(q, (snapshot) => {
   const leaderboardList = document.getElementById("leaderboardList");
@@ -72,40 +124,124 @@ onSnapshot(q, (snapshot) => {
   });
 });
 
-// ================== Top Books Chart ==================
-async function loadTopBooks() {
-  const snapshot = await getDocs(query(collection(db, "Books"), orderBy("Reads", "desc"), limit(5)));
-
+// ===== Charts =====
+async function loadBooksChart() {
+  const snapshot = await getDocs(collection(db, "Books"));
   const titles = [];
   const reads = [];
-
-  snapshot.forEach(docSnap => {
-    const book = docSnap.data();
-    titles.push(book.Title);
-    reads.push(book.Reads || 0);
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    titles.push(data.Title);
+    reads.push(data.Reads || 0);
   });
 
-  const ctx = document.getElementById("booksChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
+  new Chart(document.getElementById("booksChart"), {
+    type: 'bar',
     data: {
       labels: titles,
       datasets: [{
-        label: "Number of Reads",
-        data: reads,
-        borderWidth: 1
+        label: 'Reads',
+        data: reads
       }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      }
     }
   });
 }
-loadTopBooks();
-</script>
 
+async function loadSectionsChart() {
+  const snapshot = await getDocs(collection(db, "Books"));
+  let members = 0, readers = 0;
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.Section === "members") members += (data.Reads || 0);
+    else readers += (data.Reads || 0);
+  });
+
+  new Chart(document.getElementById("sectionsChart"), {
+    type: 'pie',
+    data: {
+      labels: ['Members Books', 'Readers Books'],
+      datasets: [{
+        data: [members, readers],
+        backgroundColor: ["#3b82f6", "#9333ea"]
+      }]
+    }
+  });
+}
+
+loadBooksChart();
+loadSectionsChart();
+
+// ===== Manage Books =====
+const bookForm = document.getElementById("bookForm");
+const booksTable = document.getElementById("booksTable");
+let editingId = null;
+
+bookForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById("titleInput").value.trim();
+  const author = document.getElementById("authorInput").value.trim();
+  const pdf = document.getElementById("pdfInput").value.trim();
+  const section = document.getElementById("sectionInput").value;
+  const categories = document.getElementById("categoriesInput").value
+    .split(",")
+    .map(c => c.trim())
+    .filter(c => c);
+
+  if (editingId) {
+    const ref = doc(db, "Books", editingId);
+    await updateDoc(ref, { Title: title, Author: author, Pdf: pdf, Section: section, Categories: categories });
+    editingId = null;
+  } else {
+    await addDoc(collection(db, "Books"), {
+      Title: title,
+      Author: author,
+      Pdf: pdf,
+      Section: section,
+      Categories: categories,
+      Reads: 0
+    });
+  }
+
+  bookForm.reset();
+});
+
+onSnapshot(collection(db, "Books"), (snapshot) => {
+  booksTable.innerHTML = "";
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.className = "border-b";
+
+    tr.innerHTML = `
+      <td class="p-2 border">${data.Title}</td>
+      <td class="p-2 border">${data.Author}</td>
+      <td class="p-2 border">${data.Section}</td>
+      <td class="p-2 border text-center">${data.Reads || 0}</td>
+      <td class="p-2 border text-center space-x-2">
+        <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
+        <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
+      </td>
+    `;
+
+    tr.querySelector(".editBtn").addEventListener("click", () => {
+      editingId = docSnap.id;
+      document.getElementById("titleInput").value = data.Title;
+      document.getElementById("authorInput").value = data.Author;
+      document.getElementById("pdfInput").value = data.Pdf;
+      document.getElementById("sectionInput").value = data.Section;
+      document.getElementById("categoriesInput").value = (data.Categories || []).join(", ");
+    });
+
+    tr.querySelector(".deleteBtn").addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this book?")) {
+        await deleteDoc(doc(db, "Books", docSnap.id));
+      }
+    });
+
+    booksTable.appendChild(tr);
+  });
+});
+</script>
 </body>
 </html>
