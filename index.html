@@ -100,12 +100,15 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ===== تحقق من تسجيل الدخول =====
+const allowedAdmin = "mymlibrary@gmail.com"; // ← غيرها لإيميل الأدمن بتاعك
+
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html"; // لو مش لوجين يرجع لصفحة تسجيل الدخول
+  if (!user || user.email !== allowedAdmin) {
+    signOut(auth); // يطرده لو مش الأدمن المسموح
+    window.location.href = "/login";
   }
 });
-
+  
 // ===== زر تسجيل الخروج =====
 const logoutBtn = document.createElement("button");
 logoutBtn.textContent = "🚪 Logout";
