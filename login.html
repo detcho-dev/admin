@@ -44,7 +44,7 @@
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "admin.html"; // ← بعد تسجيل الدخول يروح للوحة التحكم
+        window.location.href = "index.html"; // ← بعد تسجيل الدخول يروح للوحة التحكم
       } catch (err) {
         errorMsg.textContent = "❌ " + err.message;
         errorMsg.classList.remove("hidden");
