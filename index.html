@@ -44,16 +44,17 @@
         <input id="bookId" type="hidden" /> <!-- hidden for edit -->
 
         <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded" required />
-        <input id="authorInput" type="text" placeholder="Author" class="p-2 border rounded" required />
-        <input id="pdfInput" type="url" placeholder="PDF URL" class="p-2 border rounded" required />
+        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded" required />
+        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded" />
+
+        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded" required />
+        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded" required />
 
         <select id="sectionInput" class="p-2 border rounded" required>
           <option value="">-- Select Section --</option>
           <option value="members">Members</option>
           <option value="readers">Readers</option>
         </select>
-
-        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded" />
 
         <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Save Book</button>
       </form>
@@ -67,6 +68,9 @@
           <tr class="bg-gray-200">
             <th class="p-2 border">Title</th>
             <th class="p-2 border">Author</th>
+            <th class="p-2 border">Categories</th>
+            <th class="p-2 border">Cover</th>
+            <th class="p-2 border">Purchase Text</th>
             <th class="p-2 border">Section</th>
             <th class="p-2 border">Reads</th>
             <th class="p-2 border">Actions</th>
@@ -202,24 +206,33 @@ bookForm.addEventListener("submit", async (e) => {
 
   const title = document.getElementById("titleInput").value.trim();
   const author = document.getElementById("authorInput").value.trim();
-  const pdf = document.getElementById("pdfInput").value.trim();
-  const section = document.getElementById("sectionInput").value;
   const categories = document.getElementById("categoriesInput").value
     .split(",")
     .map(c => c.trim())
     .filter(c => c);
+  const coverURL = document.getElementById("coverInput").value.trim();
+  const purchaseText = document.getElementById("purchaseTextInput").value.trim();
+  const section = document.getElementById("sectionInput").value;
 
   if (editingId) {
     const ref = doc(db, "Books", editingId);
-    await updateDoc(ref, { Title: title, Author: author, Pdf: pdf, Section: section, Categories: categories });
+    await updateDoc(ref, { 
+      Title: title,
+      Author: author,
+      Categories: categories,
+      CoverURL: coverURL,
+      PurchaseText: purchaseText,
+      Section: section
+    });
     editingId = null;
   } else {
     await addDoc(collection(db, "Books"), {
       Title: title,
       Author: author,
-      Pdf: pdf,
-      Section: section,
       Categories: categories,
+      CoverURL: coverURL,
+      PurchaseText: purchaseText,
+      Section: section,
       Reads: 0
     });
   }
@@ -237,6 +250,9 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
     tr.innerHTML = `
       <td class="p-2 border">${data.Title}</td>
       <td class="p-2 border">${data.Author}</td>
+      <td class="p-2 border">${(data.Categories || []).join(", ")}</td>
+      <td class="p-2 border"><img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover"/></td>
+      <td class="p-2 border">${data.PurchaseText}</td>
       <td class="p-2 border">${data.Section}</td>
       <td class="p-2 border text-center">${data.Reads || 0}</td>
       <td class="p-2 border text-center space-x-2">
@@ -249,9 +265,10 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
       editingId = docSnap.id;
       document.getElementById("titleInput").value = data.Title;
       document.getElementById("authorInput").value = data.Author;
-      document.getElementById("pdfInput").value = data.Pdf;
-      document.getElementById("sectionInput").value = data.Section;
       document.getElementById("categoriesInput").value = (data.Categories || []).join(", ");
+      document.getElementById("coverInput").value = data.CoverURL;
+      document.getElementById("purchaseTextInput").value = data.PurchaseText;
+      document.getElementById("sectionInput").value = data.Section;
     });
 
     tr.querySelector(".deleteBtn").addEventListener("click", async () => {
