@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="icon.ico" type="image/x-icon" />
+  <title>📊 Admin Analytics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+
+  <h1 class="text-3xl font-bold mb-6 text-center">📊 Admin Analytics Dashboard</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Leaderboard Readers -->
+    <div class="bg-white shadow-md rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-3">👥 Top Readers</h2>
+      <ul id="leaderboardList" class="space-y-2"></ul>
+    </div>
+
+    <!-- Top Books -->
+    <div class="bg-white shadow-md rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-3">📚 Top Books (Most Reads)</h2>
+      <canvas id="booksChart" height="200"></canvas>
+    </div>
+
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import { getFirestore, collection, query, orderBy, limit, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
+  authDomain: "mymlibraryreads.firebaseapp.com",
+  projectId: "mymlibraryreads",
+  storageBucket: "mymlibraryreads.firebasestorage.app",
+  messagingSenderId: "11947740896",
+  appId: "1:11947740896:web:87482eb72210acdba50a85"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ================== Leaderboard Readers ==================
+const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+onSnapshot(q, (snapshot) => {
+  const leaderboardList = document.getElementById("leaderboardList");
+  leaderboardList.innerHTML = "";
+  let rank = 0;
+
+  snapshot.forEach((doc) => {
+    rank++;
+    const data = doc.data();
+    const li = document.createElement("li");
+
+    let bgColor = "bg-gray-50"; 
+    if (rank === 1) bgColor = "bg-yellow-300";
+    else if (rank === 2) bgColor = "bg-gray-300";
+    else if (rank === 3) bgColor = "bg-orange-300";
+
+    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
+    li.innerHTML = `
+      <span class="font-bold">#${rank} ${data.name}</span>
+      <div class="text-center">
+        <span class="font-bold text-lg">${data.score}</span>
+        <div class="text-xs text-gray-700">Books</div>
+      </div>
+    `;
+    leaderboardList.appendChild(li);
+  });
+});
+
+// ================== Top Books Chart ==================
+async function loadTopBooks() {
+  const snapshot = await getDocs(query(collection(db, "Books"), orderBy("Reads", "desc"), limit(5)));
+
+  const titles = [];
+  const reads = [];
+
+  snapshot.forEach(docSnap => {
+    const book = docSnap.data();
+    titles.push(book.Title);
+    reads.push(book.Reads || 0);
+  });
+
+  const ctx = document.getElementById("booksChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: titles,
+      datasets: [{
+        label: "Number of Reads",
+        data: reads,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+loadTopBooks();
+</script>
+
+</body>
+</html>
