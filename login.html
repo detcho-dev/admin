@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+
+  <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+    <h1 class="text-xl font-bold mb-4 text-center">🔐 Admin Login</h1>
+    
+    <form id="loginForm" class="space-y-4">
+      <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded" required>
+      <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded" required>
+      <button class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
+    </form>
+
+    <p id="errorMsg" class="text-red-500 mt-3 text-sm text-center"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
+      authDomain: "mymlibraryreads.firebaseapp.com",
+      projectId: "mymlibraryreads",
+      storageBucket: "mymlibraryreads.firebasestorage.app",
+      messagingSenderId: "11947740896",
+      appId: "1:11947740896:web:87482eb72210acdba50a85"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const form = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "admin-dashboard.html"; // تحويل بعد نجاح الدخول
+      } catch (error) {
+        errorMsg.textContent = "❌ Invalid credentials";
+      }
+    });
+  </script>
+</body>
+</html>
