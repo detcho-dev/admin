@@ -88,11 +88,12 @@
       </table>
     </div>
   </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import { 
   getFirestore, collection, query, orderBy, limit, getDocs,
-  setDoc, updateDoc, deleteDoc, doc
+  setDoc, updateDoc, deleteDoc, doc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 import { 
@@ -232,28 +233,28 @@ bookForm.addEventListener("submit", async (e) => {
       Section: section
     });
     editingId = null;
-     } else {
-        // هات آخر Document ID (مش BookID)
-        const q = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
-        const snapshotLast = await getDocs(q);
+  } else {
+    // هات آخر Document ID (مش BookID)
+    const q = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
+    const snapshotLast = await getDocs(q);
 
-        let newId = "001"; // default لو مفيش كتب
-        if (!snapshotLast.empty) {
-          const lastId = snapshotLast.docs[0].id; // آخر Document ID
-          const numeric = parseInt(lastId, 10) || 0;
-          newId = String(numeric + 1).padStart(3, "0"); // يخليها 001, 002, 003...
-        }
+    let newId = "001"; // default لو مفيش كتب
+    if (!snapshotLast.empty) {
+      const lastId = snapshotLast.docs[0].id; // آخر Document ID
+      const numeric = parseInt(lastId, 10) || 0;
+      newId = String(numeric + 1).padStart(3, "0"); // يخليها 001, 002, 003...
+    }
 
-        await setDoc(doc(db, "Books", newId), {
-          Title: title,
-          Author: author,
-          Categories: categories,
-          CoverURL: coverURL,
-          PurchaseText: purchaseText,
-          Section: section,
-          Reads: 0
-        });
-      }
+    await setDoc(doc(db, "Books", newId), {
+      Title: title,
+      Author: author,
+      Categories: categories,
+      CoverURL: coverURL,
+      PurchaseText: purchaseText,
+      Section: section,
+      Reads: 0
+    });
+  }
 
   bookForm.reset();
 });
@@ -279,7 +280,6 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
         <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
       </td>
     `;
-
 
     // === Edit ===
     tr.querySelector(".editBtn").addEventListener("click", () => {
