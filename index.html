@@ -258,23 +258,21 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
 
     // === Events ===
     tr.querySelector(".editBtn").addEventListener("click", () => {
-      editingId = docSnap.id;
-      document.getElementById("titleInput").value = data.Title;
-      document.getElementById("authorInput").value = data.Author;
-      document.getElementById("categoriesInput").value = (data.Categories || []).join(", ");
-      document.getElementById("coverInput").value = data.CoverURL;
-      document.getElementById("purchaseTextInput").value = data.PurchaseText;
-      document.getElementById("sectionInput").value = data.Section;
-    });
+  editingId = docSnap.id;
 
-    tr.querySelector(".deleteBtn").addEventListener("click", async () => {
-      if (confirm("Are you sure you want to delete this book?")) {
-        await deleteDoc(doc(db, "Books", docSnap.id));
-      }
-    });
+  document.getElementById("titleInput").value = data.Title || "";
+  document.getElementById("authorInput").value = data.Author || "";
 
-    booksTable.appendChild(tr);
-  });
+  // ✅ Categories: يقبل Array أو String
+  document.getElementById("categoriesInput").value = Array.isArray(data.Categories) 
+    ? data.Categories.join(", ") 
+    : (data.Categories || "");
+
+  document.getElementById("coverInput").value = data.CoverURL || "";
+  document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
+  document.getElementById("sectionInput").value = data.Section || "";
+});
+
 });
 
 </script>
