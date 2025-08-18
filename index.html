@@ -91,9 +91,10 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import { 
-  getFirestore, collection, query, orderBy, limit, onSnapshot, getDocs,
-  addDoc, updateDoc, deleteDoc, doc
+  getFirestore, collection, query, orderBy, limit, getDocs,
+  setDoc, updateDoc, deleteDoc, doc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
 import { 
   getAuth, onAuthStateChanged, signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
@@ -232,18 +233,19 @@ bookForm.addEventListener("submit", async (e) => {
     });
     editingId = null;
   } else {
-    // هات آخر BookID
-    const q = query(collection(db, "Books"), orderBy("BookID", "desc"), limit(1));
+     } else {
+    // هات آخر Document ID (مش BookID)
+    const q = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
     const snapshotLast = await getDocs(q);
 
-    let newId = 1;
+    let newId = "001"; // default لو مفيش كتب
     if (!snapshotLast.empty) {
-      const lastBook = snapshotLast.docs[0].data();
-      newId = (lastBook.BookID || 0) + 1;
+      const lastId = snapshotLast.docs[0].id; // آخر Document ID
+      const numeric = parseInt(lastId, 10) || 0;
+      newId = String(numeric + 1).padStart(3, "0"); // يخليها 001, 002, 003...
     }
 
-    await addDoc(collection(db, "Books"), {
-      BookID: newId,
+    await setDoc(doc(db, "Books", newId), {
       Title: title,
       Author: author,
       Categories: categories,
@@ -252,7 +254,6 @@ bookForm.addEventListener("submit", async (e) => {
       Section: section,
       Reads: 0
     });
-
   }
 
   bookForm.reset();
