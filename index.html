@@ -89,6 +89,7 @@ import {
   getAuth, onAuthStateChanged, signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
   authDomain: "mymlibraryreads.firebaseapp.com",
@@ -101,17 +102,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ===== تحقق من تسجيل الدخول =====
-const allowedAdmin = "mymlibrary@gmail.com"; // ← غيرها لإيميل الأدمن بتاعك
-
+// ===== Auth =====
+const allowedAdmin = "mymlibrary@gmail.com"; 
 onAuthStateChanged(auth, (user) => {
   if (!user || user.email !== allowedAdmin) {
-    signOut(auth); // يطرده لو مش الأدمن المسموح
+    signOut(auth);
     window.location.href = "/login";
   }
 });
-  
-// ===== زر تسجيل الخروج =====
+
+// Logout button
 const logoutBtn = document.createElement("button");
 logoutBtn.textContent = "🚪 Logout";
 logoutBtn.className = "absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded";
@@ -148,24 +148,25 @@ onSnapshot(q, (snapshot) => {
 });
 
 // ===== Charts =====
+let booksChartInstance = null;
+let sectionsChartInstance = null;
+
 async function loadBooksChart() {
   const snapshot = await getDocs(collection(db, "Books"));
   const titles = [];
   const reads = [];
   snapshot.forEach(doc => {
     const data = doc.data();
-    titles.push(data.Title);
+    titles.push(data.Title || "Untitled");
     reads.push(data.Reads || 0);
   });
 
-  new Chart(document.getElementById("booksChart"), {
+  if (booksChartInstance) booksChartInstance.destroy();
+  booksChartInstance = new Chart(document.getElementById("booksChart"), {
     type: 'bar',
     data: {
       labels: titles,
-      datasets: [{
-        label: 'Reads',
-        data: reads
-      }]
+      datasets: [{ label: 'Reads', data: reads }]
     }
   });
 }
@@ -176,10 +177,11 @@ async function loadSectionsChart() {
   snapshot.forEach(doc => {
     const data = doc.data();
     if (data.Section === "members") members += (data.Reads || 0);
-    else readers += (data.Reads || 0);
+    else if (data.Section === "readers") readers += (data.Reads || 0);
   });
 
-  new Chart(document.getElementById("sectionsChart"), {
+  if (sectionsChartInstance) sectionsChartInstance.destroy();
+  sectionsChartInstance = new Chart(document.getElementById("sectionsChart"), {
     type: 'pie',
     data: {
       labels: ['Members Books', 'Readers Books'],
@@ -238,6 +240,7 @@ bookForm.addEventListener("submit", async (e) => {
   bookForm.reset();
 });
 
+// ===== Books Table =====
 onSnapshot(collection(db, "Books"), (snapshot) => {
   booksTable.innerHTML = "";
   snapshot.forEach((docSnap) => {
@@ -246,9 +249,9 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
     tr.className = "border-b";
 
     tr.innerHTML = `
-      <td class="p-2 border">${data.Title}</td>
-      <td class="p-2 border">${data.Author}</td>
-      <td class="p-2 border">${data.Section}</td>
+      <td class="p-2 border">${data.Title || ""}</td>
+      <td class="p-2 border">${data.Author || ""}</td>
+      <td class="p-2 border">${data.Section || ""}</td>
       <td class="p-2 border text-center">${data.Reads || 0}</td>
       <td class="p-2 border text-center space-x-2">
         <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
@@ -256,26 +259,35 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
       </td>
     `;
 
-    // === Events ===
+    // === Edit ===
     tr.querySelector(".editBtn").addEventListener("click", () => {
-  editingId = docSnap.id;
+      editingId = docSnap.id;
+      document.getElementById("titleInput").value = data.Title || "";
+      document.getElementById("authorInput").value = data.Author || "";
+      document.getElementById("categoriesInput").value = Array.isArray(data.Categories) 
+        ? data.Categories.join(", ") 
+        : (data.Categories || "");
+      document.getElementById("coverInput").value = data.CoverURL || "";
+      document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
+      document.getElementById("sectionInput").value = data.Section || "";
+    });
 
-  document.getElementById("titleInput").value = data.Title || "";
-  document.getElementById("authorInput").value = data.Author || "";
+    // === Delete ===
+    tr.querySelector(".deleteBtn").addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this book?")) {
+        await deleteDoc(doc(db, "Books", docSnap.id));
+      }
+    });
 
-  // ✅ Categories: يقبل Array أو String
-  document.getElementById("categoriesInput").value = Array.isArray(data.Categories) 
-    ? data.Categories.join(", ") 
-    : (data.Categories || "");
+    booksTable.appendChild(tr);
+  });
 
-  document.getElementById("coverInput").value = data.CoverURL || "";
-  document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
-  document.getElementById("sectionInput").value = data.Section || "";
+  // ✅ Refresh charts when data changes
+  loadBooksChart();
+  loadSectionsChart();
 });
-
-});
-
 </script>
+
 
 </body>
 </html>
