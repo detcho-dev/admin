@@ -7,28 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 min-h-screen p-4 md:p-6">
 
-  <h1 class="text-2xl font-bold mb-6 text-center">📊 Admin Dashboard - Library</h1>
+  <h1 class="text-xl md:text-3xl font-bold mb-6 text-center">📊 Admin Dashboard - Library</h1>
 
   <!-- === GRID: Leaderboard + Charts === -->
-  <div class="grid gap-6 grid-cols-1 md:grid-cols-2 mb-10">
+  <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-10">
     
     <!-- Leaderboard -->
     <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-lg font-semibold mb-3">🏆 Top Readers</h2>
+      <h2 class="text-base md:text-lg font-semibold mb-3">🏆 Top Readers</h2>
       <ul id="leaderboardList" class="space-y-2"></ul>
     </div>
 
     <!-- Most Read Books Chart -->
     <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-lg font-semibold mb-3">📖 Most Read Books</h2>
+      <h2 class="text-base md:text-lg font-semibold mb-3">📖 Most Read Books</h2>
       <canvas id="booksChart"></canvas>
     </div>
 
     <!-- Section Distribution -->
     <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-lg font-semibold mb-3">📂 Reads by Section</h2>
+      <h2 class="text-base md:text-lg font-semibold mb-3">📂 Reads by Section</h2>
       <canvas id="sectionsChart"></canvas>
     </div>
 
@@ -36,51 +36,48 @@
 
   <!-- === Manage Books === -->
   <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
-
+    
     <!-- Add/Edit Book Form -->
     <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
-      <form id="bookForm" class="grid gap-3">
+      <h2 class="text-base md:text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
+      <form id="bookForm" class="grid gap-3 w-full max-w-md mx-auto md:mx-0">
         <input id="bookId" type="hidden" /> <!-- hidden for edit -->
 
-        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded" required />
-        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded" required />
-        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded" />
+        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded text-sm md:text-base" />
 
-        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded" required />
-        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded" required />
+        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded text-sm md:text-base" required />
 
-        <select id="sectionInput" class="p-2 border rounded" required>
+        <select id="sectionInput" class="p-2 border rounded text-sm md:text-base" required>
           <option value="">-- Select Section --</option>
           <option value="members">Members</option>
           <option value="readers">Readers</option>
         </select>
 
-        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Save Book</button>
+        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
       </form>
     </div>
 
     <!-- Books Table -->
     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-      <h2 class="text-lg font-semibold mb-4">📖 Books List</h2>
-      <table class="w-full border-collapse text-sm md:text-base">
+      <h2 class="text-base md:text-lg font-semibold mb-4">📖 Books List</h2>
+      <table class="min-w-[600px] w-full border-collapse text-xs md:text-sm lg:text-base">
         <thead>
           <tr class="bg-gray-200">
-          <th class="p-2 border">Cover</th>
-          <th class="p-2 border">Title</th>
-          <th class="p-2 border">Author</th>
-          <th class="p-2 border">Section</th>
-          <th class="p-2 border">Reads</th>
-          <th class="p-2 border">Actions</th>
-        </tr>
-      </thead>
-
+            <th class="p-2 border">Cover</th>
+            <th class="p-2 border">Title</th>
+            <th class="p-2 border">Author</th>
+            <th class="p-2 border">Section</th>
+            <th class="p-2 border">Reads</th>
+            <th class="p-2 border">Actions</th>
+          </tr>
+        </thead>
         <tbody id="booksTable"></tbody>
       </table>
     </div>
-
   </div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import { 
