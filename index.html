@@ -66,13 +66,15 @@
       <table class="w-full border-collapse text-sm md:text-base">
         <thead>
           <tr class="bg-gray-200">
-            <th class="p-2 border">Title</th>
-            <th class="p-2 border">Author</th>
-            <th class="p-2 border">Section</th>
-            <th class="p-2 border">Reads</th>
-            <th class="p-2 border">Actions</th>
-          </tr>
-        </thead>
+          <th class="p-2 border">Cover</th>
+          <th class="p-2 border">Title</th>
+          <th class="p-2 border">Author</th>
+          <th class="p-2 border">Section</th>
+          <th class="p-2 border">Reads</th>
+          <th class="p-2 border">Actions</th>
+        </tr>
+      </thead>
+
         <tbody id="booksTable"></tbody>
       </table>
     </div>
@@ -261,15 +263,19 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
     tr.className = "border-b";
 
     tr.innerHTML = `
-      <td class="p-2 border">${data.Title || ""}</td>
-      <td class="p-2 border">${data.Author || ""}</td>
-      <td class="p-2 border">${data.Section || ""}</td>
+      <td class="p-2 border text-center">
+        <img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover rounded shadow" />
+      </td>
+      <td class="p-2 border">${data.Title}</td>
+      <td class="p-2 border">${data.Author}</td>
+      <td class="p-2 border">${data.Section}</td>
       <td class="p-2 border text-center">${data.Reads || 0}</td>
       <td class="p-2 border text-center space-x-2">
         <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
         <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
       </td>
     `;
+
 
     // === Edit ===
     tr.querySelector(".editBtn").addEventListener("click", () => {
