@@ -223,6 +223,7 @@ bookForm.addEventListener("submit", async (e) => {
   const section = document.getElementById("sectionInput").value;
 
   if (editingId) {
+    // === Update Existing Book ===
     const ref = doc(db, "Books", editingId);
     await updateDoc(ref, { 
       Title: title,
@@ -234,18 +235,19 @@ bookForm.addEventListener("submit", async (e) => {
     });
     editingId = null;
   } else {
-    // هات آخر Document ID (مش BookID)
-    const q = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
-    const snapshotLast = await getDocs(q);
+    // === Add New Book Based on DocumentID field ===
+    const qLast = query(collection(db, "Books"), orderBy("DocumentID", "desc"), limit(1));
+    const snapshotLast = await getDocs(qLast);
 
-    let newId = "001"; // default لو مفيش كتب
+    let newIdNum = 1;
     if (!snapshotLast.empty) {
-      const lastId = snapshotLast.docs[0].id; // آخر Document ID
-      const numeric = parseInt(lastId, 10) || 0;
-      newId = String(numeric + 1).padStart(3, "0"); // يخليها 001, 002, 003...
+      const lastData = snapshotLast.docs[0].data();
+      newIdNum = parseInt(lastData.DocumentID, 10) + 1;
     }
+    const newId = String(newIdNum).padStart(3, "0");
 
     await setDoc(doc(db, "Books", newId), {
+      DocumentID: newId,   // 👈 نخزن رقم الكتاب
       Title: title,
       Author: author,
       Categories: categories,
@@ -258,6 +260,7 @@ bookForm.addEventListener("submit", async (e) => {
 
   bookForm.reset();
 });
+
 
 // ===== Books Table =====
 onSnapshot(collection(db, "Books"), (snapshot) => {
