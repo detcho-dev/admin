@@ -217,6 +217,134 @@ bookForm.addEventListener("submit", async (e) => {
   const categories = document.getElementById("categoriesInput").value
     .split(",")
     .map(c => c.trim())
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import { 
+  getFirestore, collection, query, orderBy, limit, getDocs,
+  setDoc, updateDoc, deleteDoc, doc, onSnapshot, addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+import { 
+  getAuth, onAuthStateChanged, signOut 
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+// ===== Firebase Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
+  authDomain: "mymlibraryreads.firebaseapp.com",
+  projectId: "mymlibraryreads",
+  storageBucket: "mymlibraryreads.firebasestorage.app",
+  messagingSenderId: "11947740896",
+  appId: "1:11947740896:web:87482eb72210acdba50a85"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ===== Auth =====
+const allowedAdmin = "mymlibrary@gmail.com"; 
+onAuthStateChanged(auth, (user) => {
+  if (!user || user.email !== allowedAdmin) {
+    signOut(auth);
+    window.location.href = "/login";
+  }
+});
+
+// Logout button
+document.getElementById("logoutBtn").onclick = () => signOut(auth);
+
+
+// ===== Leaderboard =====
+const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+onSnapshot(q, (snapshot) => {
+  const leaderboardList = document.getElementById("leaderboardList");
+  leaderboardList.innerHTML = "";
+  let rank = 0;
+
+  snapshot.forEach((doc) => {
+    rank++;
+    const data = doc.data();
+    const li = document.createElement("li");
+
+    let bgColor = "bg-gray-50"; 
+    if (rank === 1) bgColor = "bg-yellow-300";
+    else if (rank === 2) bgColor = "bg-gray-300";
+    else if (rank === 3) bgColor = "bg-orange-300";
+
+    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
+    li.innerHTML = `
+      <span class="font-bold">#${rank} ${data.name}</span>
+      <div class="text-center">
+        <span class="font-bold text-lg">${data.score}</span>
+        <div class="text-xs text-gray-700">Books</div>
+      </div>
+    `;
+    leaderboardList.appendChild(li);
+  });
+});
+
+// ===== Charts =====
+let booksChartInstance = null;
+let sectionsChartInstance = null;
+
+async function loadBooksChart() {
+  const snapshot = await getDocs(collection(db, "Books"));
+  const titles = [];
+  const reads = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    titles.push(data.Title || "Untitled");
+    reads.push(data.Reads || 0);
+  });
+
+  if (booksChartInstance) booksChartInstance.destroy();
+  booksChartInstance = new Chart(document.getElementById("booksChart"), {
+    type: 'bar',
+    data: {
+      labels: titles,
+      datasets: [{ label: 'Reads', data: reads }]
+    }
+  });
+}
+
+async function loadSectionsChart() {
+  const snapshot = await getDocs(collection(db, "Books"));
+  let members = 0, readers = 0;
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.Section === "members") members += (data.Reads || 0);
+    else if (data.Section === "readers") readers += (data.Reads || 0);
+  });
+
+  if (sectionsChartInstance) sectionsChartInstance.destroy();
+  sectionsChartInstance = new Chart(document.getElementById("sectionsChart"), {
+    type: 'pie',
+    data: {
+      labels: ['Members Books', 'Readers Books'],
+      datasets: [{
+        data: [members, readers],
+        backgroundColor: ["#3b82f6", "#9333ea"]
+      }]
+    }
+  });
+}
+
+loadBooksChart();
+loadSectionsChart();
+
+// ===== Manage Books =====
+const bookForm = document.getElementById("bookForm");
+const booksTable = document.getElementById("booksTable");
+let editingId = null;
+
+bookForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById("titleInput").value.trim();
+  const author = document.getElementById("authorInput").value.trim();
+  const categories = document.getElementById("categoriesInput").value
+    .split(",")
+    .map(c => c.trim())
     .filter(c => c);
   const coverURL = document.getElementById("coverInput").value.trim();
   const purchaseText = document.getElementById("purchaseTextInput").value.trim();
@@ -235,19 +363,8 @@ bookForm.addEventListener("submit", async (e) => {
     });
     editingId = null;
   } else {
-    // === Add New Book Based on DocumentID field ===
-    const qLast = query(collection(db, "Books"), orderBy("DocumentID", "desc"), limit(1));
-    const snapshotLast = await getDocs(qLast);
-
-    let newIdNum = 1;
-    if (!snapshotLast.empty) {
-      const lastData = snapshotLast.docs[0].data();
-      newIdNum = parseInt(lastData.DocumentID, 10) + 1;
-    }
-    const newId = String(newIdNum).padStart(3, "0");
-
-    await setDoc(doc(db, "Books", newId), {
-      DocumentID: newId,   // 👈 نخزن رقم الكتاب
+    // === Add New Book with auto ID ===
+    await addDoc(collection(db, "Books"), {
       Title: title,
       Author: author,
       Categories: categories,
@@ -312,6 +429,7 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
   loadSectionsChart();
 });
 </script>
+
 
 
 </body>
