@@ -1,125 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Library</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Library</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-6">
 
-  <!-- Header -->
+  <!-- Header -->
 <div class="flex flex-col md:flex-row items-center justify-between mb-6">
-  <h1 class="text-xl md:text-3xl font-bold text-center md:text-left mb-3 md:mb-0">
-    📊 Admin Dashboard - Library
-  </h1>
-  <button id="logoutBtn" 
-    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto">
-    🚪 Logout
-  </button>
+  <h1 class="text-xl md:text-3xl font-bold text-center md:text-left mb-3 md:mb-0">
+    📊 Admin Dashboard - Library
+  </h1>
+  <button id="logoutBtn" 
+    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto">
+    🚪 Logout
+  </button>
 </div>
 
 
-  <!-- === GRID: Leaderboard + Charts === -->
-  <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-10">
-    
-    <!-- Leaderboard -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">🏆 Top Readers</h2>
-      <ul id="leaderboardList" class="space-y-2"></ul>
-    </div>
+  <!-- === GRID: Leaderboard + Charts === -->
+  <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-10">
+    
+    <!-- Leaderboard -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-base md:text-lg font-semibold mb-3">🏆 Top Readers</h2>
+      <ul id="leaderboardList" class="space-y-2"></ul>
+    </div>
 
-    <!-- Most Read Books Chart -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">📖 Most Read Books</h2>
-      <canvas id="booksChart"></canvas>
-    </div>
+    <!-- Most Read Books Chart -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-base md:text-lg font-semibold mb-3">📖 Most Read Books</h2>
+      <canvas id="booksChart"></canvas>
+    </div>
 
-    <!-- Section Distribution -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">📂 Reads by Section</h2>
-      <canvas id="sectionsChart"></canvas>
-    </div>
+    <!-- Section Distribution -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-base md:text-lg font-semibold mb-3">📂 Reads by Section</h2>
+      <canvas id="sectionsChart"></canvas>
+    </div>
 
-  </div>
+  </div>
 
-  <!-- === Manage Books === -->
-  <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
-    
-    <!-- Add/Edit Book Form -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
-      <form id="bookForm" class="grid gap-3 w-full max-w-md mx-auto md:mx-0">
-        <input id="bookId" type="hidden" /> <!-- hidden for edit -->
+  <!-- === Manage Books === -->
+  <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
+    
+    <!-- Add/Edit Book Form -->
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-base md:text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
+      <form id="bookForm" class="grid gap-3 w-full max-w-md mx-auto md:mx-0">
+        <input id="bookId" type="hidden" /> <!-- hidden for edit -->
 
-        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded text-sm md:text-base" required />
-        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded text-sm md:text-base" required />
-        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded text-sm md:text-base" />
+        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded text-sm md:text-base" />
 
-        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" required />
-        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded text-sm md:text-base" required />
 
-        <select id="sectionInput" class="p-2 border rounded text-sm md:text-base" required>
-          <option value="">-- Select Section --</option>
-          <option value="members">Members</option>
-          <option value="readers">Readers</option>
-        </select>
+        <select id="sectionInput" class="p-2 border rounded text-sm md:text-base" required>
+          <option value="">-- Select Section --</option>
+          <option value="members">Members</option>
+          <option value="readers">Readers</option>
+        </select>
 
-        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
-      </form>
-    </div>
+        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
+      </form>
+    </div>
 
-    <!-- Books Table -->
-    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-      <h2 class="text-base md:text-lg font-semibold mb-4">📖 Books List</h2>
-      <table class="min-w-[600px] w-full border-collapse text-xs md:text-sm lg:text-base">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="p-2 border">Cover</th>
-            <th class="p-2 border">Title</th>
-            <th class="p-2 border">Author</th>
-            <th class="p-2 border">Section</th>
-            <th class="p-2 border">Reads</th>
-            <th class="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="booksTable"></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- Books Table -->
+    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+      <h2 class="text-base md:text-lg font-semibold mb-4">📖 Books List</h2>
+      <table class="min-w-[600px] w-full border-collapse text-xs md:text-sm lg:text-base">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border">Cover</th>
+            <th class="p-2 border">Title</th>
+            <th class="p-2 border">Author</th>
+            <th class="p-2 border">Section</th>
+            <th class="p-2 border">Reads</th>
+            <th class="p-2 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="booksTable"></tbody>
+      </table>
+    </div>
+  </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { 
-  getFirestore, collection, query, orderBy, limit, getDocs,
-  setDoc, updateDoc, deleteDoc, doc, onSnapshot
+import { 
+  getFirestore, collection, query, orderBy, limit, getDocs,
+  setDoc, updateDoc, deleteDoc, doc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-import { 
-  getAuth, onAuthStateChanged, signOut 
+import { 
+  getAuth, onAuthStateChanged, signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
 // ===== Firebase Config =====
 const firebaseConfig = {
-  apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
-  authDomain: "mymlibraryreads.firebaseapp.com",
-  projectId: "mymlibraryreads",
-  storageBucket: "mymlibraryreads.firebasestorage.app",
-  messagingSenderId: "11947740896",
-  appId: "1:11947740896:web:87482eb72210acdba50a85"
+  apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
+  authDomain: "mymlibraryreads.firebaseapp.com",
+  projectId: "mymlibraryreads",
+  storageBucket: "mymlibraryreads.firebasestorage.app",
+  messagingSenderId: "11947740896",
+  appId: "1:11947740896:web:87482eb72210acdba50a85"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ===== Auth =====
-const allowedAdmin = "mymlibrary@gmail.com"; 
+const allowedAdmin = "mymlibrary@gmail.com"; 
 onAuthStateChanged(auth, (user) => {
-  if (!user || user.email !== allowedAdmin) {
-    signOut(auth);
-    window.location.href = "/login";
-  }
+  if (!user || user.email !== allowedAdmin) {
+    signOut(auth);
+    window.location.href = "/login";
+  }
 });
 
 // Logout button
@@ -129,30 +129,30 @@ document.getElementById("logoutBtn").onclick = () => signOut(auth);
 // ===== Leaderboard =====
 const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
 onSnapshot(q, (snapshot) => {
-  const leaderboardList = document.getElementById("leaderboardList");
-  leaderboardList.innerHTML = "";
-  let rank = 0;
+  const leaderboardList = document.getElementById("leaderboardList");
+  leaderboardList.innerHTML = "";
+  let rank = 0;
 
-  snapshot.forEach((doc) => {
-    rank++;
-    const data = doc.data();
-    const li = document.createElement("li");
+  snapshot.forEach((doc) => {
+    rank++;
+    const data = doc.data();
+    const li = document.createElement("li");
 
-    let bgColor = "bg-gray-50"; 
-    if (rank === 1) bgColor = "bg-yellow-300";
-    else if (rank === 2) bgColor = "bg-gray-300";
-    else if (rank === 3) bgColor = "bg-orange-300";
+    let bgColor = "bg-gray-50"; 
+    if (rank === 1) bgColor = "bg-yellow-300";
+    else if (rank === 2) bgColor = "bg-gray-300";
+    else if (rank === 3) bgColor = "bg-orange-300";
 
-    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
-    li.innerHTML = `
-      <span class="font-bold">#${rank} ${data.name}</span>
-      <div class="text-center">
-        <span class="font-bold text-lg">${data.score}</span>
-        <div class="text-xs text-gray-700">Books</div>
-      </div>
-    `;
-    leaderboardList.appendChild(li);
-  });
+    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
+    li.innerHTML = `
+      <span class="font-bold">#${rank} ${data.name}</span>
+      <div class="text-center">
+        <span class="font-bold text-lg">${data.score}</span>
+        <div class="text-xs text-gray-700">Books</div>
+      </div>
+    `;
+    leaderboardList.appendChild(li);
+  });
 });
 
 // ===== Charts =====
@@ -160,45 +160,45 @@ let booksChartInstance = null;
 let sectionsChartInstance = null;
 
 async function loadBooksChart() {
-  const snapshot = await getDocs(collection(db, "Books"));
-  const titles = [];
-  const reads = [];
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    titles.push(data.Title || "Untitled");
-    reads.push(data.Reads || 0);
-  });
+  const snapshot = await getDocs(collection(db, "Books"));
+  const titles = [];
+  const reads = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    titles.push(data.Title || "Untitled");
+    reads.push(data.Reads || 0);
+  });
 
-  if (booksChartInstance) booksChartInstance.destroy();
-  booksChartInstance = new Chart(document.getElementById("booksChart"), {
-    type: 'bar',
-    data: {
-      labels: titles,
-      datasets: [{ label: 'Reads', data: reads }]
-    }
-  });
+  if (booksChartInstance) booksChartInstance.destroy();
+  booksChartInstance = new Chart(document.getElementById("booksChart"), {
+    type: 'bar',
+    data: {
+      labels: titles,
+      datasets: [{ label: 'Reads', data: reads }]
+    }
+  });
 }
 
 async function loadSectionsChart() {
-  const snapshot = await getDocs(collection(db, "Books"));
-  let members = 0, readers = 0;
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.Section === "members") members += (data.Reads || 0);
-    else if (data.Section === "readers") readers += (data.Reads || 0);
-  });
+  const snapshot = await getDocs(collection(db, "Books"));
+  let members = 0, readers = 0;
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.Section === "members") members += (data.Reads || 0);
+    else if (data.Section === "readers") readers += (data.Reads || 0);
+  });
 
-  if (sectionsChartInstance) sectionsChartInstance.destroy();
-  sectionsChartInstance = new Chart(document.getElementById("sectionsChart"), {
-    type: 'pie',
-    data: {
-      labels: ['Members Books', 'Readers Books'],
-      datasets: [{
-        data: [members, readers],
-        backgroundColor: ["#3b82f6", "#9333ea"]
-      }]
-    }
-  });
+  if (sectionsChartInstance) sectionsChartInstance.destroy();
+  sectionsChartInstance = new Chart(document.getElementById("sectionsChart"), {
+    type: 'pie',
+    data: {
+      labels: ['Members Books', 'Readers Books'],
+      datasets: [{
+        data: [members, readers],
+        backgroundColor: ["#3b82f6", "#9333ea"]
+      }]
+    }
+  });
 }
 
 loadBooksChart();
@@ -210,226 +210,108 @@ const booksTable = document.getElementById("booksTable");
 let editingId = null;
 
 bookForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  e.preventDefault();
 
-  const title = document.getElementById("titleInput").value.trim();
-  const author = document.getElementById("authorInput").value.trim();
-  const categories = document.getElementById("categoriesInput").value
-    .split(",")
-    .map(c => c.trim())
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { 
-  getFirestore, collection, query, orderBy, limit, getDocs,
-  setDoc, updateDoc, deleteDoc, doc, onSnapshot, addDoc
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  const title = document.getElementById("titleInput").value.trim();
+  const author = document.getElementById("authorInput").value.trim();
+  const categories = document.getElementById("categoriesInput").value
+    .split(",")
+    .map(c => c.trim())
+    .filter(c => c);
+  const coverURL = document.getElementById("coverInput").value.trim();
+  const purchaseText = document.getElementById("purchaseTextInput").value.trim();
+  const section = document.getElementById("sectionInput").value;
 
-import { 
-  getAuth, onAuthStateChanged, signOut 
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  if (editingId) {
+    // === Update Existing Book ===
+    const ref = doc(db, "Books", editingId);
+    await updateDoc(ref, { 
+      Title: title,
+      Author: author,
+      Categories: categories,
+      CoverURL: coverURL,
+      PurchaseText: purchaseText,
+      Section: section
+    });
+    editingId = null;
+  } else {
+    // === Add New Book Based on DocumentID field ===
+    const qLast = query(collection(db, "Books"), orderBy("DocumentID", "desc"), limit(1));
+    const snapshotLast = await getDocs(qLast);
 
-// ===== Firebase Config =====
-const firebaseConfig = {
-  apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
-  authDomain: "mymlibraryreads.firebaseapp.com",
-  projectId: "mymlibraryreads",
-  storageBucket: "mymlibraryreads.firebasestorage.app",
-  messagingSenderId: "11947740896",
-  appId: "1:11947740896:web:87482eb72210acdba50a85"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+    let newIdNum = 1;
+    if (!snapshotLast.empty) {
+      const lastData = snapshotLast.docs[0].data();
+      newIdNum = parseInt(lastData.DocumentID, 10) + 1;
+    }
+    const newId = String(newIdNum).padStart(3, "0");
 
-// ===== Auth =====
-const allowedAdmin = "mymlibrary@gmail.com"; 
-onAuthStateChanged(auth, (user) => {
-  if (!user || user.email !== allowedAdmin) {
-    signOut(auth);
-    window.location.href = "/login";
-  }
-});
+    await setDoc(doc(db, "Books", newId), {
+      DocumentID: newId,   // 👈 نخزن رقم الكتاب
+      Title: title,
+      Author: author,
+      Categories: categories,
+      CoverURL: coverURL,
+      PurchaseText: purchaseText,
+      Section: section,
+      Reads: 0
+    });
+  }
 
-// Logout button
-document.getElementById("logoutBtn").onclick = () => signOut(auth);
-
-
-// ===== Leaderboard =====
-const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
-onSnapshot(q, (snapshot) => {
-  const leaderboardList = document.getElementById("leaderboardList");
-  leaderboardList.innerHTML = "";
-  let rank = 0;
-
-  snapshot.forEach((doc) => {
-    rank++;
-    const data = doc.data();
-    const li = document.createElement("li");
-
-    let bgColor = "bg-gray-50"; 
-    if (rank === 1) bgColor = "bg-yellow-300";
-    else if (rank === 2) bgColor = "bg-gray-300";
-    else if (rank === 3) bgColor = "bg-orange-300";
-
-    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
-    li.innerHTML = `
-      <span class="font-bold">#${rank} ${data.name}</span>
-      <div class="text-center">
-        <span class="font-bold text-lg">${data.score}</span>
-        <div class="text-xs text-gray-700">Books</div>
-      </div>
-    `;
-    leaderboardList.appendChild(li);
-  });
-});
-
-// ===== Charts =====
-let booksChartInstance = null;
-let sectionsChartInstance = null;
-
-async function loadBooksChart() {
-  const snapshot = await getDocs(collection(db, "Books"));
-  const titles = [];
-  const reads = [];
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    titles.push(data.Title || "Untitled");
-    reads.push(data.Reads || 0);
-  });
-
-  if (booksChartInstance) booksChartInstance.destroy();
-  booksChartInstance = new Chart(document.getElementById("booksChart"), {
-    type: 'bar',
-    data: {
-      labels: titles,
-      datasets: [{ label: 'Reads', data: reads }]
-    }
-  });
-}
-
-async function loadSectionsChart() {
-  const snapshot = await getDocs(collection(db, "Books"));
-  let members = 0, readers = 0;
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.Section === "members") members += (data.Reads || 0);
-    else if (data.Section === "readers") readers += (data.Reads || 0);
-  });
-
-  if (sectionsChartInstance) sectionsChartInstance.destroy();
-  sectionsChartInstance = new Chart(document.getElementById("sectionsChart"), {
-    type: 'pie',
-    data: {
-      labels: ['Members Books', 'Readers Books'],
-      datasets: [{
-        data: [members, readers],
-        backgroundColor: ["#3b82f6", "#9333ea"]
-      }]
-    }
-  });
-}
-
-loadBooksChart();
-loadSectionsChart();
-
-// ===== Manage Books =====
-const bookForm = document.getElementById("bookForm");
-const booksTable = document.getElementById("booksTable");
-let editingId = null;
-
-bookForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const title = document.getElementById("titleInput").value.trim();
-  const author = document.getElementById("authorInput").value.trim();
-  const categories = document.getElementById("categoriesInput").value
-    .split(",")
-    .map(c => c.trim())
-    .filter(c => c);
-  const coverURL = document.getElementById("coverInput").value.trim();
-  const purchaseText = document.getElementById("purchaseTextInput").value.trim();
-  const section = document.getElementById("sectionInput").value;
-
-  if (editingId) {
-    // === Update Existing Book ===
-    const ref = doc(db, "Books", editingId);
-    await updateDoc(ref, { 
-      Title: title,
-      Author: author,
-      Categories: categories,
-      CoverURL: coverURL,
-      PurchaseText: purchaseText,
-      Section: section
-    });
-    editingId = null;
-  } else {
-    // === Add New Book with auto ID ===
-    await addDoc(collection(db, "Books"), {
-      Title: title,
-      Author: author,
-      Categories: categories,
-      CoverURL: coverURL,
-      PurchaseText: purchaseText,
-      Section: section,
-      Reads: 0
-    });
-  }
-
-  bookForm.reset();
+  bookForm.reset();
 });
 
 
 // ===== Books Table =====
 onSnapshot(collection(db, "Books"), (snapshot) => {
-  booksTable.innerHTML = "";
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const tr = document.createElement("tr");
-    tr.className = "border-b";
+  booksTable.innerHTML = "";
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.className = "border-b";
 
-    tr.innerHTML = `
-      <td class="p-2 border text-center">
-        <img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover rounded shadow" />
-      </td>
-      <td class="p-2 border">${data.Title}</td>
-      <td class="p-2 border">${data.Author}</td>
-      <td class="p-2 border">${data.Section}</td>
-      <td class="p-2 border text-center">${data.Reads || 0}</td>
-      <td class="p-2 border text-center space-x-2">
-        <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
-        <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
-      </td>
-    `;
+    tr.innerHTML = `
+      <td class="p-2 border text-center">
+        <img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover rounded shadow" />
+      </td>
+      <td class="p-2 border">${data.Title}</td>
+      <td class="p-2 border">${data.Author}</td>
+      <td class="p-2 border">${data.Section}</td>
+      <td class="p-2 border text-center">${data.Reads || 0}</td>
+      <td class="p-2 border text-center space-x-2">
+        <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
+        <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
+      </td>
+    `;
 
-    // === Edit ===
-    tr.querySelector(".editBtn").addEventListener("click", () => {
-      editingId = docSnap.id;
-      document.getElementById("titleInput").value = data.Title || "";
-      document.getElementById("authorInput").value = data.Author || "";
-      document.getElementById("categoriesInput").value = Array.isArray(data.Categories) 
-        ? data.Categories.join(", ") 
-        : (data.Categories || "");
-      document.getElementById("coverInput").value = data.CoverURL || "";
-      document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
-      document.getElementById("sectionInput").value = data.Section || "";
-    });
+    // === Edit ===
+    tr.querySelector(".editBtn").addEventListener("click", () => {
+      editingId = docSnap.id;
+      document.getElementById("titleInput").value = data.Title || "";
+      document.getElementById("authorInput").value = data.Author || "";
+      document.getElementById("categoriesInput").value = Array.isArray(data.Categories) 
+        ? data.Categories.join(", ") 
+        : (data.Categories || "");
+      document.getElementById("coverInput").value = data.CoverURL || "";
+      document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
+      document.getElementById("sectionInput").value = data.Section || "";
+    });
 
-    // === Delete ===
-    tr.querySelector(".deleteBtn").addEventListener("click", async () => {
-      if (confirm("Are you sure you want to delete this book?")) {
-        await deleteDoc(doc(db, "Books", docSnap.id));
-      }
-    });
+    // === Delete ===
+    tr.querySelector(".deleteBtn").addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this book?")) {
+        await deleteDoc(doc(db, "Books", docSnap.id));
+      }
+    });
 
-    booksTable.appendChild(tr);
-  });
+    booksTable.appendChild(tr);
+  });
 
-  // ✅ Refresh charts when data changes
-  loadBooksChart();
-  loadSectionsChart();
+  // ✅ Refresh charts when data changes
+  loadBooksChart();
+  loadSectionsChart();
 });
 </script>
-
 
 
 </body>
