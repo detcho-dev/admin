@@ -74,7 +74,7 @@
           <option value="readers">Readers</option>
         </select>
 
-        <button class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
       </form>
     </div>
 
@@ -113,7 +113,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBlOVx-YSmPFeq3lp-gAGe576yG1RhMLYs",
   authDomain: "mymlibraryreads.firebaseapp.com",
   projectId: "mymlibraryreads",
-  storageBucket: "mymlibraryreads.firebasestorage.app",
+  storageBucket: "mymlibraryreads.appspot.com",
   messagingSenderId: "11947740896",
   appId: "1:11947740896:web:87482eb72210acdba50a85"
 };
@@ -242,9 +242,13 @@ bookCoverFile.addEventListener("change", async () => {
       body: formData
     });
     const data = await res.json();
-    coverInput.value = data.secure_url;
-    coverPreview.src = data.secure_url;
-    coverPreview.classList.remove("hidden");
+    if (data.secure_url) {
+      coverInput.value = data.secure_url;
+      coverPreview.src = data.secure_url;
+      coverPreview.classList.remove("hidden");
+    } else {
+      alert("❌ Upload failed: " + JSON.stringify(data));
+    }
   } catch (err) {
     alert("❌ Upload failed");
     console.error(err);
