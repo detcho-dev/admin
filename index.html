@@ -56,7 +56,16 @@
         <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded text-sm md:text-base" required />
         <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded text-sm md:text-base" />
 
-        <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" required />
+        <!-- Upload Cover instead of manual URL -->
+        <div class="flex flex-col gap-2">
+          <button type="button" id="uploadBtn" class="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 text-sm md:text-base">
+            Upload Cover
+          </button>
+          <input id="bookCoverFile" type="file" accept="image/*" class="hidden" />
+          <img id="coverPreview" class="hidden w-32 h-40 object-cover rounded shadow" />
+          <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" readonly required />
+        </div>
+
         <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded text-sm md:text-base" required />
 
         <select id="sectionInput" class="p-2 border rounded text-sm md:text-base" required>
@@ -206,6 +215,42 @@ const bookForm = document.getElementById("bookForm");
 const booksTable = document.getElementById("booksTable");
 let editingId = null;
 
+// ===== Cloudinary Upload =====
+const CLOUD_NAME = "your_cloud_name"; // ضع اسم حسابك
+const UPLOAD_PRESET = "your_unsigned_preset"; // ضع preset من Cloudinary
+
+const uploadBtn = document.getElementById("uploadBtn");
+const bookCoverFile = document.getElementById("bookCoverFile");
+const coverInput = document.getElementById("coverInput");
+const coverPreview = document.getElementById("coverPreview");
+
+uploadBtn.addEventListener("click", () => {
+  bookCoverFile.click();
+});
+
+bookCoverFile.addEventListener("change", async () => {
+  const file = bookCoverFile.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    coverInput.value = data.secure_url;
+    coverPreview.src = data.secure_url;
+    coverPreview.classList.remove("hidden");
+  } catch (err) {
+    alert("❌ Upload failed");
+    console.error(err);
+  }
+});
+
 bookForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -232,19 +277,18 @@ bookForm.addEventListener("submit", async (e) => {
     });
     editingId = null;
   } else {
-    // === Add New Book based on doc.id only (بدون حفظ أي field زيادة) ===
+    // === Add New Book based on doc.id only ===
     const qLast = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
     const snapshotLast = await getDocs(qLast);
 
     let newIdNum = 1;
     if (!snapshotLast.empty) {
-      const lastId = snapshotLast.docs[0].id;   // استخدم ID المستند الحالي
-      newIdNum = parseInt(lastId, 10) + 1;      // حوله لرقم وزوّد واحد
+      const lastId = snapshotLast.docs[0].id;
+      newIdNum = parseInt(lastId, 10) + 1;
     }
-    const newId = String(newIdNum).padStart(3, "0"); // 001, 002, 003 ...
+    const newId = String(newIdNum).padStart(3, "0");
 
     await setDoc(doc(db, "Books", newId), {
-      // ✅ منغيرش أي حاجة غير البيانات المطلوبة فقط
       Title: title,
       Author: author,
       Categories: categories,
@@ -256,6 +300,7 @@ bookForm.addEventListener("submit", async (e) => {
   }
 
   bookForm.reset();
+  coverPreview.classList.add("hidden");
 });
 
 // ===== Books Table =====
@@ -291,6 +336,10 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
       document.getElementById("coverInput").value = data.CoverURL || "";
       document.getElementById("purchaseTextInput").value = data.PurchaseText || "";
       document.getElementById("sectionInput").value = data.Section || "";
+      if (data.CoverURL) {
+        coverPreview.src = data.CoverURL;
+        coverPreview.classList.remove("hidden");
+      }
     });
 
     // === Delete ===
