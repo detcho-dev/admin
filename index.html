@@ -74,7 +74,7 @@
           <option value="readers">Readers</option>
         </select>
 
-        <button type="submit" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
+        <button type="submit" id="saveBookBtn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
       </form>
     </div>
 
@@ -232,6 +232,10 @@ bookCoverFile.addEventListener("change", async () => {
   const file = bookCoverFile.files[0];
   if (!file) return;
 
+  const saveBtn = document.getElementById("saveBookBtn");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Uploading...";
+
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", UPLOAD_PRESET);
@@ -247,11 +251,15 @@ bookCoverFile.addEventListener("change", async () => {
       coverPreview.src = data.secure_url;
       coverPreview.classList.remove("hidden");
     } else {
-      alert("❌ Upload failed: " + JSON.stringify(data));
+      console.error("Upload error:", data);
+      alert("❌ Upload failed: " + (data.error?.message || "Unknown error"));
     }
   } catch (err) {
-    alert("❌ Upload failed");
-    console.error(err);
+    console.error("❌ Upload failed:", err);
+    alert("❌ Upload failed: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Book";
   }
 });
 
@@ -268,8 +276,12 @@ bookForm.addEventListener("submit", async (e) => {
   const purchaseText = document.getElementById("purchaseTextInput").value.trim();
   const section = document.getElementById("sectionInput").value;
 
+  if (!coverURL) {
+    alert("❌ Please upload a cover image first.");
+    return;
+  }
+
   if (editingId) {
-    // === Update Existing Book ===
     const ref = doc(db, "Books", editingId);
     await updateDoc(ref, { 
       Title: title,
@@ -281,7 +293,6 @@ bookForm.addEventListener("submit", async (e) => {
     });
     editingId = null;
   } else {
-    // === Add New Book based on doc.id only ===
     const qLast = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
     const snapshotLast = await getDocs(qLast);
 
@@ -329,7 +340,6 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
       </td>
     `;
 
-    // === Edit ===
     tr.querySelector(".editBtn").addEventListener("click", () => {
       editingId = docSnap.id;
       document.getElementById("titleInput").value = data.Title || "";
@@ -346,7 +356,6 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
       }
     });
 
-    // === Delete ===
     tr.querySelector(".deleteBtn").addEventListener("click", async () => {
       if (confirm("Are you sure you want to delete this book?")) {
         await deleteDoc(doc(db, "Books", docSnap.id));
@@ -356,7 +365,6 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
     booksTable.appendChild(tr);
   });
 
-  // ✅ Refresh charts when data changes
   loadBooksChart();
   loadSectionsChart();
 });
