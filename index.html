@@ -99,12 +99,12 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { 
+import {  
   getFirestore, collection, query, orderBy, limit, getDocs,
   setDoc, updateDoc, deleteDoc, doc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-import { 
+import {  
   getAuth, onAuthStateChanged, signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
@@ -281,41 +281,46 @@ bookForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  if (editingId) {
-    const ref = doc(db, "Books", editingId);
-    await updateDoc(ref, { 
-      Title: title,
-      Author: author,
-      Categories: categories,
-      CoverURL: coverURL,
-      PurchaseText: purchaseText,
-      Section: section
-    });
-    editingId = null;
-  } else {
-    const qLast = query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1));
-    const snapshotLast = await getDocs(qLast);
+  try {
+    if (editingId) {
+      const ref = doc(db, "Books", editingId);
+      await updateDoc(ref, { 
+        Title: title,
+        Author: author,
+        Categories: categories,
+        CoverURL: coverURL,
+        PurchaseText: purchaseText,
+        Section: section
+      });
+      editingId = null;
+    } else {
+      // Auto-generate ID
+      const snapshotLast = await getDocs(query(collection(db, "Books"), orderBy("__name__", "desc"), limit(1)));
+      let newIdNum = 1;
+      if (!snapshotLast.empty) {
+        const lastId = snapshotLast.docs[0].id;
+        newIdNum = parseInt(lastId, 10) + 1;
+      }
+      const newId = String(newIdNum).padStart(3, "0");
 
-    let newIdNum = 1;
-    if (!snapshotLast.empty) {
-      const lastId = snapshotLast.docs[0].id;
-      newIdNum = parseInt(lastId, 10) + 1;
+      await setDoc(doc(db, "Books", newId), {
+        Title: title,
+        Author: author,
+        Categories: categories,
+        CoverURL: coverURL,
+        PurchaseText: purchaseText,
+        Section: section,
+        Reads: 0
+      });
     }
-    const newId = String(newIdNum).padStart(3, "0");
 
-    await setDoc(doc(db, "Books", newId), {
-      Title: title,
-      Author: author,
-      Categories: categories,
-      CoverURL: coverURL,
-      PurchaseText: purchaseText,
-      Section: section,
-      Reads: 0
-    });
+    bookForm.reset();
+    coverPreview.classList.add("hidden");
+    coverInput.value = "";
+  } catch (err) {
+    console.error("❌ Save failed:", err);
+    alert("❌ Save failed: " + err.message);
   }
-
-  bookForm.reset();
-  coverPreview.classList.add("hidden");
 });
 
 // ===== Books Table =====
