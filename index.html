@@ -6,16 +6,33 @@
   <title>Admin Dashboard - Library</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            dark: {
+              900: '#0a0a0f',
+              800: '#121218',
+              700: '#1a1a22',
+              600: '#252530'
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-6">
+<body class="bg-gray-900 min-h-screen p-2 sm:p-4 md:p-6 text-gray-200">
 
   <!-- Header -->
   <div class="flex flex-col md:flex-row items-center justify-between mb-6">
-    <h1 class="text-xl md:text-3xl font-bold text-center md:text-left mb-3 md:mb-0">
+    <h1 class="text-xl md:text-3xl font-bold text-center md:text-left mb-3 md:mb-0 text-purple-400">
       📊 Admin Dashboard - Library
     </h1>
     <button id="logoutBtn"
-      class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto">
+      class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors duration-200 w-full md:w-auto shadow-md">
       🚪 Logout
     </button>
   </div>
@@ -24,21 +41,31 @@
   <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-10">
     
     <!-- Leaderboard -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">🏆 Top Readers</h2>
+    <div class="bg-gray-800 shadow-xl rounded-lg p-4 border border-gray-700">
+      <h2 class="text-base md:text-lg font-semibold mb-3 text-purple-300 flex items-center">
+        <span class="mr-2">🏆</span> Top Readers
+      </h2>
       <ul id="leaderboardList" class="space-y-2"></ul>
     </div>
 
     <!-- Most Read Books Chart -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">📖 Most Read Books</h2>
-      <canvas id="booksChart"></canvas>
+    <div class="bg-gray-800 shadow-xl rounded-lg p-4 border border-gray-700">
+      <h2 class="text-base md:text-lg font-semibold mb-3 text-purple-300 flex items-center">
+        <span class="mr-2">📖</span> Most Read Books
+      </h2>
+      <div class="h-64">
+        <canvas id="booksChart"></canvas>
+      </div>
     </div>
 
     <!-- Section Distribution -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-3">📂 Reads by Section</h2>
-      <canvas id="sectionsChart"></canvas>
+    <div class="bg-gray-800 shadow-xl rounded-lg p-4 border border-gray-700">
+      <h2 class="text-base md:text-lg font-semibold mb-3 text-purple-300 flex items-center">
+        <span class="mr-2">📂</span> Reads by Section
+      </h2>
+      <div class="h-64">
+        <canvas id="sectionsChart"></canvas>
+      </div>
     </div>
 
   </div>
@@ -47,53 +74,60 @@
   <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
     
     <!-- Add/Edit Book Form -->
-    <div class="bg-white shadow rounded-lg p-4">
-      <h2 class="text-base md:text-lg font-semibold mb-4">➕ Add / Edit Book</h2>
-      <form id="bookForm" class="grid gap-3 w-full max-w-md mx-auto md:mx-0">
+    <div class="bg-gray-800 shadow-xl rounded-lg p-4 border border-gray-700">
+      <h2 class="text-base md:text-lg font-semibold mb-4 text-purple-300">➕ Add / Edit Book</h2>
+      <form id="bookForm" class="grid gap-4 w-full max-w-md mx-auto md:mx-0">
         <input id="bookId" type="hidden" /> <!-- hidden for edit -->
 
-        <input id="titleInput" type="text" placeholder="Book Title" class="p-2 border rounded text-sm md:text-base" required />
-        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-2 border rounded text-sm md:text-base" required />
-        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-2 border rounded text-sm md:text-base" />
+        <input id="titleInput" type="text" placeholder="Book Title" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" required />
+        <input id="authorInput" type="text" placeholder="Author (e.g. Youssef Ahmed)" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" required />
+        <input id="categoriesInput" type="text" placeholder="Categories (comma separated)" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" />
 
         <!-- Upload Cover instead of manual URL -->
         <div class="flex flex-col gap-2">
-          <button type="button" id="uploadBtn" class="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 text-sm md:text-base">
+          <button type="button" id="uploadBtn" class="bg-purple-600 text-white p-3 rounded hover:bg-purple-700 transition-colors duration-200 text-sm md:text-base shadow-md">
             Upload Cover
           </button>
           <input id="bookCoverFile" type="file" accept="image/*" class="hidden" />
-          <img id="coverPreview" class="hidden w-32 h-40 object-cover rounded shadow" />
-          <input id="coverInput" type="url" placeholder="Cover URL" class="p-2 border rounded text-sm md:text-base" readonly required />
+          <div class="flex flex-col items-center">
+            <img id="coverPreview" class="hidden w-32 h-40 object-cover rounded shadow-lg border-2 border-gray-600" />
+            <span id="uploadStatus" class="text-xs text-gray-400 mt-1"></span>
+          </div>
+          <input id="coverInput" type="url" placeholder="Cover URL" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" readonly required />
         </div>
 
-        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-2 border rounded text-sm md:text-base" required />
+        <input id="purchaseTextInput" type="text" placeholder="Purchase Text (e.g. Du - دو [FREE EDITION])" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" required />
 
-        <select id="sectionInput" class="p-2 border rounded text-sm md:text-base" required>
+        <select id="sectionInput" class="p-3 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base" required>
           <option value="">-- Select Section --</option>
           <option value="members">Members</option>
           <option value="readers">Readers</option>
         </select>
 
-        <button type="submit" id="saveBookBtn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm md:text-base">Save Book</button>
+        <button type="submit" id="saveBookBtn" class="bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base shadow-md flex items-center justify-center">
+          <span id="saveBookText">Save Book</span>
+        </button>
       </form>
     </div>
 
     <!-- Books Table -->
-    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-      <h2 class="text-base md:text-lg font-semibold mb-4">📖 Books List</h2>
-      <table class="min-w-[600px] w-full border-collapse text-xs md:text-sm lg:text-base">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="p-2 border">Cover</th>
-            <th class="p-2 border">Title</th>
-            <th class="p-2 border">Author</th>
-            <th class="p-2 border">Section</th>
-            <th class="p-2 border">Reads</th>
-            <th class="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="booksTable"></tbody>
-      </table>
+    <div class="bg-gray-800 shadow-xl rounded-lg p-4 border border-gray-700 overflow-x-auto">
+      <h2 class="text-base md:text-lg font-semibold mb-4 text-purple-300">📖 Books List</h2>
+      <div class="min-w-[600px] overflow-x-auto">
+        <table class="w-full border-collapse text-xs md:text-sm lg:text-base">
+          <thead>
+            <tr class="bg-gray-700">
+              <th class="p-3 border border-gray-600">Cover</th>
+              <th class="p-3 border border-gray-600">Title</th>
+              <th class="p-3 border border-gray-600">Author</th>
+              <th class="p-3 border border-gray-600">Section</th>
+              <th class="p-3 border border-gray-600">Reads</th>
+              <th class="p-3 border border-gray-600">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="booksTable" class="divide-y divide-gray-700"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -133,7 +167,7 @@ onAuthStateChanged(auth, (user) => {
 document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
 // ===== Leaderboard =====
-const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+const q = query(collection(db, "users"), orderBy("readCount", "desc"), limit(10));
 onSnapshot(q, (snapshot) => {
   const leaderboardList = document.getElementById("leaderboardList");
   leaderboardList.innerHTML = "";
@@ -144,21 +178,26 @@ onSnapshot(q, (snapshot) => {
     const data = doc.data();
     const li = document.createElement("li");
 
-    let bgColor = "bg-gray-50"; 
-    if (rank === 1) bgColor = "bg-yellow-300";
-    else if (rank === 2) bgColor = "bg-gray-300";
-    else if (rank === 3) bgColor = "bg-orange-300";
+    let bgColor = "bg-gray-700"; 
+    if (rank === 1) bgColor = "bg-yellow-800 border-yellow-500 border-l-4";
+    else if (rank === 2) bgColor = "bg-gray-700 border-gray-400 border-l-4";
+    else if (rank === 3) bgColor = "bg-orange-800 border-orange-500 border-l-4";
 
-    li.className = `flex justify-between items-center p-2 rounded ${bgColor}`;
+    li.className = `flex justify-between items-center p-3 rounded-lg ${bgColor} transition-all duration-200 hover:scale-[1.02]`;
     li.innerHTML = `
-      <span class="font-bold">#${rank} ${data.name}</span>
+      <span class="font-bold text-lg">#${rank} ${data.name || doc.id}</span>
       <div class="text-center">
-        <span class="font-bold text-lg">${data.score}</span>
-        <div class="text-xs text-gray-700">Books</div>
+        <span class="font-bold text-xl text-purple-300">${data.readCount || 0}</span>
+        <div class="text-xs text-gray-300 font-medium mt-0.5">Books Read</div>
       </div>
     `;
     leaderboardList.appendChild(li);
   });
+
+  // Add placeholder if no users
+  if (rank === 0) {
+    leaderboardList.innerHTML = '<li class="text-center p-4 text-gray-400">No readers found</li>';
+  }
 });
 
 // ===== Charts =====
@@ -180,7 +219,43 @@ async function loadBooksChart() {
     type: 'bar',
     data: {
       labels: titles,
-      datasets: [{ label: 'Reads', data: reads }]
+      datasets: [{
+        label: 'Reads',
+        data: reads,
+        backgroundColor: 'rgba(147, 51, 234, 0.7)',
+        borderColor: 'rgb(147, 51, 234)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#e5e7eb'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: '#9ca3af'
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.2)'
+          }
+        },
+        x: {
+          ticks: {
+            color: '#9ca3af'
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.2)'
+          }
+        }
+      }
     }
   });
 }
@@ -201,12 +276,26 @@ async function loadSectionsChart() {
       labels: ['Members Books', 'Readers Books'],
       datasets: [{
         data: [members, readers],
-        backgroundColor: ["#3b82f6", "#9333ea"]
+        backgroundColor: ["#3b82f6", "#9333ea"],
+        borderColor: ["#2563eb", "#7e22ce"],
+        borderWidth: 1
       }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#e5e7eb'
+          }
+        }
+      }
     }
   });
 }
 
+// Initial load
 loadBooksChart();
 loadSectionsChart();
 
@@ -216,13 +305,16 @@ const booksTable = document.getElementById("booksTable");
 let editingId = null;
 
 // ===== Cloudinary Upload =====
-const CLOUD_NAME = "dqyxzsnyq"; // ضع اسم حسابك
-const UPLOAD_PRESET = "ml_default"; // ضع preset من Cloudinary
+const CLOUD_NAME = "dqyxzsnyq";
+const UPLOAD_PRESET = "ml_default";
 
 const uploadBtn = document.getElementById("uploadBtn");
 const bookCoverFile = document.getElementById("bookCoverFile");
 const coverInput = document.getElementById("coverInput");
 const coverPreview = document.getElementById("coverPreview");
+const uploadStatus = document.getElementById("uploadStatus");
+const saveBookBtn = document.getElementById("saveBookBtn");
+const saveBookText = document.getElementById("saveBookText");
 
 uploadBtn.addEventListener("click", () => {
   bookCoverFile.click();
@@ -232,9 +324,8 @@ bookCoverFile.addEventListener("change", async () => {
   const file = bookCoverFile.files[0];
   if (!file) return;
 
-  const saveBtn = document.getElementById("saveBookBtn");
-  saveBtn.disabled = true;
-  saveBtn.textContent = "Uploading...";
+  saveBookBtn.disabled = true;
+  saveBookText.textContent = "Uploading...";
 
   const formData = new FormData();
   formData.append("file", file);
@@ -250,16 +341,22 @@ bookCoverFile.addEventListener("change", async () => {
       coverInput.value = data.secure_url;
       coverPreview.src = data.secure_url;
       coverPreview.classList.remove("hidden");
+      uploadStatus.textContent = "Upload successful!";
+      uploadStatus.className = "text-xs text-green-400 mt-1";
     } else {
       console.error("Upload error:", data);
       alert("❌ Upload failed: " + (data.error?.message || "Unknown error"));
+      uploadStatus.textContent = "Upload failed";
+      uploadStatus.className = "text-xs text-red-400 mt-1";
     }
   } catch (err) {
     console.error("❌ Upload failed:", err);
     alert("❌ Upload failed: " + err.message);
+    uploadStatus.textContent = "Upload failed";
+    uploadStatus.className = "text-xs text-red-400 mt-1";
   } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = "Save Book";
+    saveBookBtn.disabled = false;
+    saveBookText.textContent = "Save Book";
   }
 });
 
@@ -317,6 +414,7 @@ bookForm.addEventListener("submit", async (e) => {
     bookForm.reset();
     coverPreview.classList.add("hidden");
     coverInput.value = "";
+    uploadStatus.textContent = "";
   } catch (err) {
     console.error("❌ Save failed:", err);
     alert("❌ Save failed: " + err.message);
@@ -329,19 +427,19 @@ onSnapshot(collection(db, "Books"), (snapshot) => {
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
     const tr = document.createElement("tr");
-    tr.className = "border-b";
+    tr.className = "border-b border-gray-700";
 
     tr.innerHTML = `
-      <td class="p-2 border text-center">
-        <img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover rounded shadow" />
+      <td class="p-3 border border-gray-600 text-center">
+        <img src="${data.CoverURL}" alt="cover" class="w-12 h-16 object-cover rounded shadow mx-auto" />
       </td>
-      <td class="p-2 border">${data.Title}</td>
-      <td class="p-2 border">${data.Author}</td>
-      <td class="p-2 border">${data.Section}</td>
-      <td class="p-2 border text-center">${data.Reads || 0}</td>
-      <td class="p-2 border text-center space-x-2">
-        <button class="bg-yellow-400 px-2 py-1 rounded editBtn">Edit</button>
-        <button class="bg-red-500 text-white px-2 py-1 rounded deleteBtn">Delete</button>
+      <td class="p-3 border border-gray-600">${data.Title}</td>
+      <td class="p-3 border border-gray-600">${data.Author}</td>
+      <td class="p-3 border border-gray-600">${data.Section}</td>
+      <td class="p-3 border border-gray-600 text-center">${data.Reads || 0}</td>
+      <td class="p-3 border border-gray-600 text-center space-x-2">
+        <button class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded editBtn transition-colors duration-200">Edit</button>
+        <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded deleteBtn transition-colors duration-200">Delete</button>
       </td>
     `;
 
