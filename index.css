@@ -1,0 +1,280 @@
+:root {
+  --bg-dark: #121212;
+  --bg-card: #1e1e1e;
+  --text: #e0e0e0;
+  --accent: #bb86fc;
+  --danger: #cf6679;
+  --success: #03dac6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.screen {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-container {
+  max-width: 400px;
+  margin: 100px auto;
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 4px;
+  background: #2d2d2d;
+  color: var(--text);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #333;
+  margin-bottom: 20px;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+#search {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #a569fd;
+}
+
+button#logout-btn {
+  background: var(--danger);
+}
+
+button#logout-btn:hover {
+  background: #b74b6c;
+}
+
+#create-with-id-btn {
+  background: #4caf50 !important;
+}
+
+#create-with-id-btn:hover {
+  background: #3d8b40 !important;
+}
+
+#refresh-btn {
+  background: #2196f3;
+}
+
+#refresh-btn:hover {
+  background: #0b7dda;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+th {
+  background: #2d2d2d;
+  font-weight: bold;
+}
+
+tr:hover {
+  background: #2d2d2d;
+}
+
+.actions button, .copy-link-btn {
+  margin: 0 5px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  background: #666;
+}
+
+.copy-link-btn:hover {
+  background: #555;
+}
+
+.view-btn {
+  background: var(--success);
+  text-decoration: none;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #02b8a5;
+  text-decoration: none;
+}
+
+.delete-btn {
+  background: var(--danger);
+}
+
+.delete-btn:hover {
+  background: #b74b6c;
+}
+
+.edit-btn {
+  background: #ff9800;
+}
+
+.edit-btn:hover {
+  background: #e68a00;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  margin: 10% auto;
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+  position: relative;
+  direction: ltr;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 4px;
+  background: #2d2d2d;
+  color: var(--text);
+  height: 44px;
+  font-size: 16px;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select:hover {
+  background-color: #333;
+}
+
+select:focus {
+  outline: 2px solid var(--accent);
+  background-color: #333;
+}
+
+.upload-container {
+  margin: 15px 0;
+}
+
+.upload-btn {
+  background: #2196f3;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.image-preview, .file-preview {
+  margin-top: 10px;
+  max-width: 200px;
+  max-height: 200px;
+}
+
+.image-preview img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.file-preview a {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+#no-results {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 8px;
+}
