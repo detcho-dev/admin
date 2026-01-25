@@ -13,8 +13,6 @@ import {
   setDoc,
   deleteDoc,
   getDoc,
-  query,
-  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -111,7 +109,7 @@ async function uploadToCloudinary(file, folder) {
   }
 }
 
-// Load Books - Modified to handle different collection paths
+// Load Books - Using EXACT collection name "Books"
 async function loadBooks() {
   const tableBody = document.getElementById("table-body");
   const noResultsDiv = document.getElementById("no-results");
@@ -119,53 +117,13 @@ async function loadBooks() {
   tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">Loading...</td></tr>';
 
   try {
-    // Try different collection paths - ADJUST THIS PATH ACCORDING TO YOUR ACTUAL STRUCTURE
-    let querySnapshot;
+    // Use the EXACT collection name "Books" with capital B
+    const querySnapshot = await getDocs(collection(db, "Books"));
     
-    // Option 1: Try root collection "books"
-    try {
-      querySnapshot = await getDocs(collection(db, "Books"));
-      console.log("Found books in root collection");
-    } catch (error) {
-      console.log("Root collection 'books' not found or inaccessible");
-    }
+    console.log(`Found ${querySnapshot.size} books in "Books" collection`);
     
-    // Option 2: If no data found, try under "content" collection (common structure)
-    if (!querySnapshot || querySnapshot.empty) {
-      try {
-        querySnapshot = await getDocs(collection(db, "content", "Books", "items"));
-        console.log("Found books in content/books/items path");
-      } catch (error) {
-        console.log("content/books/items path not found");
-      }
-    }
-    
-    // Option 3: Try users collection if authenticated
-    const user = auth.currentUser;
-    if (!querySnapshot || querySnapshot.empty) {
-      if (user) {
-        try {
-          querySnapshot = await getDocs(collection(db, "users", user.uid, "Books"));
-          console.log("Found books in user's collection");
-        } catch (error) {
-          console.log("User books collection not found");
-        }
-      }
-    }
-    
-    // Option 4: Try "library" collection
-    if (!querySnapshot || querySnapshot.empty) {
-      try {
-        querySnapshot = await getDocs(collection(db, "library"));
-        console.log("Found books in 'library' collection");
-      } catch (error) {
-        console.log("'library' collection not found");
-      }
-    }
-    
-    // If still no data, show empty state
-    if (!querySnapshot || querySnapshot.empty) {
-      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">No books found in any collection</td></tr>';
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">No books found in "Books" collection</td></tr>';
       noResultsDiv.style.display = "block";
       return;
     }
@@ -216,8 +174,8 @@ async function loadBooks() {
         <td>${reads}</td>
         <td>${purchaseText ? `<a href="${purchaseText}" target="_blank" class="view-btn">Download PDF</a>` : "-"}</td>
         <td class="actions">
-          <button class="edit-btn" data-id="${doc.id}" data-path="${doc.ref.path}">Edit</button>
-          <button class="delete-btn" data-id="${doc.id}" data-path="${doc.ref.path}">Delete</button>
+          <button class="edit-btn" data-id="${doc.id}">Edit</button>
+          <button class="delete-btn" data-id="${doc.id}">Delete</button>
         </td>
       `;
       tableBody.appendChild(row);
@@ -312,8 +270,8 @@ async function addNewBook() {
     : [];
 
   try {
-    // ADJUST THIS PATH TO MATCH YOUR ACTUAL COLLECTION STRUCTURE
-    const bookRef = doc(db, "Books", id); // Change this path if needed
+    // Use the EXACT collection name "Books" with capital B
+    const bookRef = doc(db, "Books", id);
     
     await setDoc(bookRef, {
       title: title,
@@ -337,22 +295,15 @@ async function addNewBook() {
 }
 
 // Open Edit Modal
-async function openEditModal(id, path = null) {
+async function openEditModal(id) {
   try {
-    let docRef;
-    
-    // Use the path if provided, otherwise try default paths
-    if (path) {
-      docRef = doc(db, path);
-    } else {
-      // Try different paths
-      docRef = doc(db, "books", id);
-    }
+    // Use the EXACT collection name "Books" with capital B
+    const docRef = doc(db, "Books", id);
     
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      console.log("Editing book data:", data);
+      console.log("Editing book:", data);
       
       document.getElementById("edit-id").value = id;
       document.getElementById("edit-title").value = data.title || data.bookTitle || data.name || "";
@@ -400,9 +351,6 @@ async function openEditModal(id, path = null) {
       const reads = data.reads || data.views || data.downloadCount || 0;
       document.getElementById("edit-reads").value = reads;
       
-      // Store the document path for saving
-      document.getElementById("edit-book-modal").dataset.docPath = docRef.path;
-      
       document.getElementById("edit-book-modal").style.display = "block";
     } else {
       showToast("Document not found!", "error");
@@ -423,7 +371,6 @@ async function updateBook() {
   const purchaseText = document.getElementById("edit-purchase-url").value.trim();
   const section = document.getElementById("edit-section").value;
   const reads = parseInt(document.getElementById("edit-reads").value) || 0;
-  const docPath = document.getElementById("edit-book-modal").dataset.docPath;
 
   // Split categories into array
   const categories = categoriesInput 
@@ -431,14 +378,8 @@ async function updateBook() {
     : [];
 
   try {
-    let docRef;
-    
-    // Use the stored document path if available
-    if (docPath) {
-      docRef = doc(db, docPath);
-    } else {
-      docRef = doc(db, "books", id); // Default path
-    }
+    // Use the EXACT collection name "Books" with capital B
+    const docRef = doc(db, "Books", id);
     
     await setDoc(docRef, {
       title: title,
@@ -462,17 +403,12 @@ async function updateBook() {
 }
 
 // Delete Book
-async function deleteBook(id, path = null) {
+async function deleteBook(id) {
   if (!confirm("⚠️ Delete this book? This action cannot be undone!")) return;
   
   try {
-    let docRef;
-    
-    if (path) {
-      docRef = doc(db, path);
-    } else {
-      docRef = doc(db, "books", id); // Default path
-    }
+    // Use the EXACT collection name "Books" with capital B
+    const docRef = doc(db, "Books", id);
     
     await deleteDoc(docRef);
     loadBooks();
@@ -550,16 +486,14 @@ function attachActionButtons() {
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.target.dataset.id;
-      const path = e.target.dataset.path || null;
-      openEditModal(id, path);
+      openEditModal(id);
     });
   });
   
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.target.dataset.id;
-      const path = e.target.dataset.path || null;
-      deleteBook(id, path);
+      deleteBook(id);
     });
   });
 }
@@ -630,43 +564,6 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("edit-book-modal");
     }
   });
-  
-  // Add test data button for debugging
-  const debugContainer = document.createElement('div');
-  debugContainer.style.position = 'fixed';
-  debugContainer.style.bottom = '20px';
-  debugContainer.style.left = '20px';
-  debugContainer.style.zIndex = '10000';
-  debugContainer.innerHTML = `
-    <button id="test-data-btn" style="padding: 8px 16px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
-      Add Test Data
-    </button>
-  `;
-  document.body.appendChild(debugContainer);
-  
-  document.getElementById("test-data-btn")?.addEventListener("click", async () => {
-    try {
-      // Add test book
-      const testId = "test-book-" + Date.now();
-      await setDoc(doc(db, "books", testId), {
-        title: "Test Book",
-        author: "Test Author",
-        categories: ["Test", "Demo"],
-        coverURL: "https://via.placeholder.com/150/92c952?text=Book+Cover",
-        purchaseText: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        section: "readers",
-        reads: 42,
-        documentID: testId,
-        createdAt: new Date().toISOString()
-      });
-      
-      showToast("Test data added successfully!", "success");
-      loadBooks();
-    } catch (error) {
-      console.error("Error adding test data:", error);
-      showToast("Error: " + error.message, "error");
-    }
-  });
 });
 
 // Auth State
@@ -693,6 +590,3 @@ export {
   searchTable,
   closeModal
 };
-
-// Add this for debugging purposes
-window.debugLoadBooks = loadBooks;
