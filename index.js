@@ -109,7 +109,7 @@ async function uploadToCloudinary(file, folder) {
   }
 }
 
-// Load Books - Using EXACT collection name "Books"
+// Load Books - Using EXACT collection name "Books" and handling field case sensitivity
 async function loadBooks() {
   const tableBody = document.getElementById("table-body");
   const noResultsDiv = document.getElementById("no-results");
@@ -117,7 +117,6 @@ async function loadBooks() {
   tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">Loading...</td></tr>';
 
   try {
-    // Use the EXACT collection name "Books" with capital B
     const querySnapshot = await getDocs(collection(db, "Books"));
     
     console.log(`Found ${querySnapshot.size} books in "Books" collection`);
@@ -128,40 +127,38 @@ async function loadBooks() {
       return;
     }
 
-    // Log the actual data structure for debugging
-    console.log("Books data structure:", querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
-    
     tableBody.innerHTML = "";
     noResultsDiv.style.display = "none";
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() || {};
       console.log("Processing book:", doc.id, data);
       
-      // Handle different possible field names - More flexible data mapping
-      const title = data.title || data.bookTitle || data.name || "-";
-      const author = data.author || data.writer || data.authors?.join(', ') || "-";
+      // Handle case sensitivity for field names - Check both cases
+      const title = data.Title || data.title || data.bookTitle || data.name || "-";
+      const author = data.Author || data.author || data.writer || "-";
       
-      // Handle categories in different formats
+      // Handle categories (array or string)
       let categories = "-";
-      if (data.categories) {
-        if (Array.isArray(data.categories)) {
-          categories = data.categories.join(", ");
-        } else if (typeof data.categories === 'string') {
-          categories = data.categories;
-        } else if (typeof data.categories === 'object') {
-          categories = Object.values(data.categories).join(", ");
+      const rawCategories = data.Categories || data.categories;
+      if (rawCategories) {
+        if (Array.isArray(rawCategories)) {
+          categories = rawCategories.join(", ");
+        } else if (typeof rawCategories === 'string') {
+          categories = rawCategories.trim();
         }
       }
       
-      const coverURL = data.coverURL || data.coverImage || data.image || data.thumbnail || "";
-      const purchaseText = data.purchaseText || data.pdfUrl || data.downloadUrl || data.fileUrl || "";
-      const section = data.section || data.category || "members";
-      const reads = data.reads || data.views || data.downloadCount || 0;
+      // Handle URLs (trim whitespace and handle missing fields)
+      const coverURL = (data.CoverURL || data.coverURL || data.coverImage || data.image || "").trim();
+      const purchaseText = (data.PurchaseText || data.purchaseText || data.pdfUrl || data.downloadUrl || "").trim();
+      const section = (data.Section || data.section || "members").toLowerCase();
+      const reads = parseInt(data.Reads || data.reads || data.views || 0) || 0;
       
       // Format section display
       const sectionDisplay = section === "members" ? "Members" : 
-                           section === "readers" ? "Readers" : section;
+                           section === "readers" ? "Readers" : 
+                           section.charAt(0).toUpperCase() + section.slice(1);
 
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -169,7 +166,7 @@ async function loadBooks() {
         <td>${title}</td>
         <td>${author}</td>
         <td>${categories}</td>
-        <td>${coverURL ? `<img src="${coverURL}" alt="Cover" style="max-height: 100px; max-width: 100px; border-radius: 4px;">` : "-"}</td>
+        <td>${coverURL ? `<img src="${coverURL}" alt="Cover" style="max-height: 100px; max-width: 100px; border-radius: 4px; object-fit: cover;">` : "-"}</td>
         <td>${sectionDisplay}</td>
         <td>${reads}</td>
         <td>${purchaseText ? `<a href="${purchaseText}" target="_blank" class="view-btn">Download PDF</a>` : "-"}</td>
