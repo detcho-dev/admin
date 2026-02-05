@@ -4,8 +4,393 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - Books</title>
-    <link rel="stylesheet" href="index.css" />
-    <script type="module" src="index.js"></script>
+    <style>
+      :root {
+        --bg-dark: #121212;
+        --bg-card: #1e1e1e;
+        --text: #e0e0e0;
+        --accent: #bb86fc;
+        --danger: #cf6679;
+        --success: #03dac6;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      .screen {
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        text-align: center;
+      }
+
+      .login-container input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 4px;
+        background: #2d2d2d;
+        color: var(--text);
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #333;
+        margin-bottom: 20px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      #search {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px;
+        border: none;
+        border-radius: 4px;
+        background: var(--bg-card);
+        color: var(--text);
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        background: var(--accent);
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #a569fd;
+      }
+
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      button#logout-btn {
+        background: var(--danger);
+      }
+
+      button#logout-btn:hover {
+        background: #b74b6c;
+      }
+
+      #create-with-id-btn {
+        background: #4caf50 !important;
+      }
+
+      #create-with-id-btn:hover {
+        background: #3d8b40 !important;
+      }
+
+      #refresh-btn {
+        background: #2196f3;
+      }
+
+      #refresh-btn:hover {
+        background: #0b7dda;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bg-card);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+
+      th, td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+      }
+
+      th {
+        background: #2d2d2d;
+        font-weight: bold;
+      }
+
+      tr:hover {
+        background: #2d2d2d;
+      }
+
+      .actions button, .copy-link-btn {
+        margin: 0 5px;
+        padding: 5px 10px;
+        font-size: 0.9em;
+        background: #666;
+      }
+
+      .copy-link-btn:hover {
+        background: #555;
+      }
+
+      .view-btn {
+        background: var(--success);
+        text-decoration: none;
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        color: white;
+      }
+
+      .view-btn:hover {
+        background: #02b8a5;
+        text-decoration: none;
+      }
+
+      .view-btn:disabled {
+        background: #666;
+        cursor: not-allowed;
+        text-decoration: none;
+        opacity: 0.7;
+      }
+
+      .delete-btn {
+        background: var(--danger);
+      }
+
+      .delete-btn:hover {
+        background: #b74b6c;
+      }
+
+      .edit-btn {
+        background: #ff9800;
+      }
+
+      .edit-btn:hover {
+        background: #e68a00;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: var(--bg-card);
+        margin: 5% auto;
+        padding: 30px;
+        width: 90%;
+        max-width: 650px;
+        border-radius: 12px;
+        position: relative;
+        direction: ltr;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .close {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 32px;
+        cursor: pointer;
+        color: var(--text);
+        transition: transform 0.2s;
+      }
+
+      .close:hover {
+        transform: rotate(90deg);
+        color: var(--accent);
+      }
+
+      .modal-content input,
+      .modal-content select {
+        width: 100%;
+        padding: 14px;
+        margin: 12px 0;
+        border: none;
+        border-radius: 6px;
+        background: #2d2d2d;
+        color: var(--text);
+        font-size: 16px;
+        height: auto;
+      }
+
+      .modal-content h2 {
+        margin-bottom: 20px;
+        color: var(--accent);
+        text-align: center;
+        font-size: 24px;
+      }
+
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 20px;
+        padding-right: 45px;
+        cursor: pointer;
+      }
+
+      select:hover {
+        background-color: #333;
+      }
+
+      select:focus {
+        outline: 2px solid var(--accent);
+        background-color: #333;
+      }
+
+      .upload-container {
+        margin: 15px 0;
+      }
+
+      .upload-btn {
+        background: #2196f3;
+        border: none;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-block;
+        font-weight: bold;
+        transition: all 0.3s;
+        width: 100%;
+        margin-top: 5px;
+      }
+
+      .upload-btn:hover {
+        background: #0d8aee;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      }
+
+      .image-preview, .file-preview {
+        margin-top: 15px;
+        text-align: center;
+      }
+
+      .image-preview img {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        display: block;
+        margin: 10px auto;
+      }
+
+      .file-preview a {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #4caf50;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+
+      .url-input-container {
+        margin: 15px 0;
+      }
+
+      .url-input-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #bbb;
+      }
+
+      .url-input-container input {
+        padding: 12px 15px;
+        font-size: 15px;
+      }
+
+      .url-hint {
+        font-size: 13px;
+        color: #888;
+        margin-top: 5px;
+        font-style: italic;
+      }
+
+      #no-results {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--bg-card);
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+        color: #888;
+      }
+
+      .not-available {
+        background: #666;
+        color: #aaa;
+        cursor: not-allowed;
+        opacity: 0.8;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .controls {
+          flex-direction: column;
+        }
+        
+        .modal-content {
+          width: 95%;
+          padding: 20px;
+          margin: 2% auto;
+        }
+        
+        table {
+          font-size: 14px;
+        }
+        
+        th, td {
+          padding: 10px 8px;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- Login Screen -->
@@ -51,7 +436,7 @@
         </tbody>
       </table>
 
-      <div id="no-results" style="display: none; text-align: center; padding: 20px; color: #e0e0e0">
+      <div id="no-results" style="display: none;">
         <p>No books found.</p>
         <button id="create-with-id-btn" style="display: none; margin-top: 15px; padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Create book with this ID</button>
       </div>
@@ -76,26 +461,29 @@
     <div id="new-book-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="close-new-modal">&times;</span>
-        <h2>New Book</h2>
+        <h2>Add New Book</h2>
         <input type="text" id="new-id" placeholder="Document ID (Custom)" required />
         <input type="text" id="new-title" placeholder="Title" required />
         <input type="text" id="new-author" placeholder="Author" required />
         <input type="text" id="new-categories" placeholder="Categories (Comma Separated)" required />
+        
         <div class="upload-container">
           <button type="button" id="cover-upload-btn" class="upload-btn">Upload Cover Image</button>
           <input type="file" id="cover-upload" accept="image/*" style="display: none;" />
           <div id="cover-preview" class="image-preview"></div>
         </div>
-        <div class="upload-container">
-          <button type="button" id="purchase-upload-btn" class="upload-btn">Upload Purchase PDF</button>
-          <input type="file" id="purchase-upload" accept=".pdf" style="display: none;" />
-          <div id="purchase-preview" class="file-preview"></div>
+        
+        <div class="url-input-container">
+          <label for="new-purchase-url">Purchase PDF URL (Google Drive)</label>
+          <input type="url" id="new-purchase-url" placeholder="https://drive.google.com/file/d/FILE_ID/view?usp=drive_link" />
+          <div class="url-hint">Paste Google Drive share link - will be converted automatically</div>
         </div>
+        
         <select id="new-section" required>
           <option value="members">Members</option>
           <option value="readers">Readers</option>
         </select>
-        <input type="number" id="new-reads" placeholder="Reads" min="0" required />
+        <input type="number" id="new-reads" placeholder="Reads" min="0" value="0" required />
         <button id="add-book-btn">Add Book</button>
       </div>
     </div>
@@ -105,20 +493,23 @@
       <div class="modal-content">
         <span class="close" id="close-edit-modal">&times;</span>
         <h2>Edit Book</h2>
-        <input type="text" id="edit-id" readonly />
+        <input type="text" id="edit-id" readonly placeholder="Document ID" />
         <input type="text" id="edit-title" placeholder="Title" required />
         <input type="text" id="edit-author" placeholder="Author" required />
         <input type="text" id="edit-categories" placeholder="Categories (Comma Separated)" required />
+        
         <div class="upload-container">
           <button type="button" id="edit-cover-upload-btn" class="upload-btn">Upload Cover Image</button>
           <input type="file" id="edit-cover-upload" accept="image/*" style="display: none;" />
           <div id="edit-cover-preview" class="image-preview"></div>
         </div>
-        <div class="upload-container">
-          <button type="button" id="edit-purchase-upload-btn" class="upload-btn">Upload Purchase PDF</button>
-          <input type="file" id="edit-purchase-upload" accept=".pdf" style="display: none;" />
-          <div id="edit-purchase-preview" class="file-preview"></div>
+        
+        <div class="url-input-container">
+          <label for="edit-purchase-url">Purchase PDF URL (Google Drive)</label>
+          <input type="url" id="edit-purchase-url" placeholder="https://drive.google.com/file/d/FILE_ID/view?usp=drive_link" />
+          <div class="url-hint">Paste Google Drive share link - will be converted automatically</div>
         </div>
+        
         <select id="edit-section" required>
           <option value="members">Members</option>
           <option value="readers">Readers</option>
@@ -127,5 +518,602 @@
         <button id="update-book-btn">Save Changes</button>
       </div>
     </div>
+
+    <script type="module">
+      // Firebase Initialization
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        setDoc,
+        deleteDoc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAemoGMX1PHF55qUTh_5SZIrN3Y-QaqrWA",
+        authDomain: "yossef-dev-216b0.firebaseapp.com",
+        projectId: "yossef-dev-216b0",
+        storageBucket: "yossef-dev-216b0.firebasestorage.app",
+        messagingSenderId: "509948939620",
+        appId: "1:509948939620:web:017b806e995bb114d8be71",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // Cloudinary Configuration
+      const CLOUDINARY_CLOUD_NAME = "detcho";
+      const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+
+      // Toast Notification
+      function showToast(message, type = "info") {
+        const toast = document.getElementById("toast");
+        if (!toast) return;
+        toast.textContent = message;
+        toast.style.transform = "translateX(0)";
+        
+        if (type === "success") toast.style.background = "#2e7d32";
+        else if (type === "error") toast.style.background = "#d32f2f";
+        else toast.style.background = "#333";
+        
+        setTimeout(() => {
+          toast.style.transform = "translateX(200%)";
+        }, 3500);
+      }
+
+      // Login
+      async function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const errorEl = document.getElementById("login-error");
+
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          document.getElementById("login-screen").style.display = "none";
+          document.getElementById("dashboard").style.display = "block";
+          loadBooks();
+          errorEl.style.display = "none";
+        } catch (error) {
+          errorEl.textContent = "Error: " + error.message;
+          errorEl.style.display = "block";
+          console.error("Login error:", error);
+        }
+      }
+
+      // Logout
+      async function logout() {
+        try {
+          await signOut(auth);
+          document.getElementById("dashboard").style.display = "none";
+          document.getElementById("login-screen").style.display = "block";
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      }
+
+      // Cloudinary Upload Function
+      async function uploadToCloudinary(file, folder) {
+        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+          showToast("Cloudinary configuration missing!", "error");
+          return null;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('folder', folder);
+
+        try {
+          const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+          
+          if (data.secure_url) {
+            return data.secure_url;
+          } else {
+            throw new Error(data.error?.message || 'Upload failed');
+          }
+        } catch (error) {
+          console.error('Cloudinary upload error:', error);
+          showToast(`Upload failed: ${error.message}`, 'error');
+          return null;
+        }
+      }
+
+      // Convert Google Drive URL to direct download link
+      function convertDriveUrl(url) {
+        if (!url) return "";
+        
+        // If it's already a direct download link, return as is
+        if (url.includes('uc?export=download')) {
+          return url;
+        }
+        
+        // Handle Google Drive links
+        if (url.includes('drive.google.com')) {
+          // Remove query parameters like ?usp=drive_link
+          let cleanUrl = url.split('?')[0];
+          
+          // Extract file ID from /file/d/FILE_ID/
+          const match = cleanUrl.match(/\/file\/d\/([^\/]+)/);
+          if (match && match[1]) {
+            const fileId = match[1];
+            return `https://drive.google.com/uc?export=download&id=${fileId}`;
+          }
+          
+          // Alternative format handling
+          if (cleanUrl.includes('/open?id=')) {
+            const fileId = cleanUrl.split('/open?id=')[1];
+            return `https://drive.google.com/uc?export=download&id=${fileId}`;
+          }
+        }
+        
+        // Return original URL if no conversion needed
+        return url;
+      }
+
+      // Load Books - FIXED: Handle case sensitivity in field names
+      async function loadBooks() {
+        const tableBody = document.getElementById("table-body");
+        const noResultsDiv = document.getElementById("no-results");
+        
+        tableBody.innerHTML = '<tr><td colspan="9" class="loading">Loading books...</td></tr>';
+
+        try {
+          const querySnapshot = await getDocs(collection(db, "Books"));
+          
+          console.log(`Found ${querySnapshot.size} books in "Books" collection`);
+          
+          if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">No books found in "Books" collection</td></tr>';
+            noResultsDiv.style.display = "block";
+            return;
+          }
+
+          tableBody.innerHTML = "";
+          noResultsDiv.style.display = "none";
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data() || {};
+            
+            // Handle case sensitivity for field names
+            const title = data.Title || data.title || data.bookTitle || data.name || "-";
+            const author = data.Author || data.author || data.writer || "-";
+            
+            // Handle categories
+            let categories = "-";
+            const rawCategories = data.Categories || data.categories;
+            if (rawCategories) {
+              if (Array.isArray(rawCategories)) {
+                categories = rawCategories.join(", ");
+              } else if (typeof rawCategories === 'string') {
+                categories = rawCategories.trim();
+              }
+            }
+            
+            // Handle URLs
+            const coverURL = (data.CoverURL || data.coverURL || data.coverImage || data.image || "").trim();
+            let purchaseText = (data.PurchaseText || data.purchaseText || data.pdfUrl || data.downloadUrl || "").trim();
+            const section = (data.Section || data.section || "members").toLowerCase();
+            const reads = parseInt(data.Reads || data.reads || data.views || 0) || 0;
+            
+            // Format section display
+            const sectionDisplay = section === "members" ? "Members" : 
+                                 section === "readers" ? "Readers" : 
+                                 section.charAt(0).toUpperCase() + section.slice(1);
+            
+            // Handle PurchaseText === "x" case
+            let purchaseButton = "-";
+            if (purchaseText === "x") {
+              purchaseButton = `<button class="view-btn not-available" disabled>Not Available</button>`;
+            } else if (purchaseText) {
+              // Convert Google Drive URL if needed
+              purchaseText = convertDriveUrl(purchaseText);
+              purchaseButton = `<a href="${purchaseText}" target="_blank" class="view-btn">Download PDF</a>`;
+            }
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${doc.id}</td>
+              <td>${title}</td>
+              <td>${author}</td>
+              <td>${categories}</td>
+              <td>${coverURL ? `<img src="${coverURL}" alt="Cover" style="max-height: 100px; max-width: 100px; border-radius: 4px; object-fit: cover;">` : "-"}</td>
+              <td>${sectionDisplay}</td>
+              <td>${reads}</td>
+              <td>${purchaseButton}</td>
+              <td class="actions">
+                <button class="edit-btn" data-id="${doc.id}">Edit</button>
+                <button class="delete-btn" data-id="${doc.id}">Delete</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+
+          attachActionButtons();
+          showToast(`Loaded ${querySnapshot.size} books successfully!`, "success");
+        } catch (error) {
+          console.error("Error loading books:", error);
+          tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ff4444">Error: ${error.message}</td></tr>`;
+          showToast("Failed to load books: " + error.message, "error");
+        }
+      }
+
+      // Search
+      function searchTable() {
+        const searchTerm = document.getElementById("search").value.trim().toLowerCase();
+        const tableBody = document.getElementById("table-body");
+        const noResultsDiv = document.getElementById("no-results");
+        const createBtn = document.getElementById("create-with-id-btn");
+        
+        noResultsDiv.style.display = "none";
+        
+        if (searchTerm === "") {
+          document.querySelectorAll("#table-body tr").forEach(row => row.style.display = "");
+          return;
+        }
+
+        let hasMatch = false;
+        document.querySelectorAll("#table-body tr").forEach(row => {
+          const cells = row.querySelectorAll("td:not(.actions)");
+          let match = false;
+          cells.forEach(cell => {
+            if (cell.textContent.toLowerCase().includes(searchTerm)) match = true;
+          });
+          if (match) {
+            row.style.display = "";
+            hasMatch = true;
+          } else {
+            row.style.display = "none";
+          }
+        });
+
+        if (!hasMatch) {
+          noResultsDiv.style.display = "block";
+          if (searchTerm && !searchTerm.includes(" ")) {
+            createBtn.textContent = `Create with ID: "${searchTerm}"`;
+            createBtn.style.display = "inline-block";
+            createBtn.dataset.searchId = searchTerm;
+          } else {
+            createBtn.style.display = "none";
+          }
+        }
+      }
+
+      // Open New Modal
+      function openNewBookModal() {
+        // Reset form fields
+        document.getElementById("new-id").value = "";
+        document.getElementById("new-title").value = "";
+        document.getElementById("new-author").value = "";
+        document.getElementById("new-categories").value = "";
+        document.getElementById("new-cover-url").value = "";
+        document.getElementById("new-purchase-url").value = "";
+        document.getElementById("new-section").value = "members";
+        document.getElementById("new-reads").value = "0";
+        document.getElementById("cover-preview").innerHTML = "";
+        document.getElementById("purchase-preview").innerHTML = "";
+        
+        document.getElementById("new-book-modal").style.display = "flex";
+      }
+
+      // Add Book - FIXED: Use consistent field names with capital first letter
+      async function addNewBook() {
+        const id = document.getElementById("new-id").value.trim();
+        const title = document.getElementById("new-title").value.trim();
+        const author = document.getElementById("new-author").value.trim();
+        const categoriesInput = document.getElementById("new-categories").value.trim();
+        const coverURL = document.getElementById("new-cover-url").value.trim();
+        let purchaseText = document.getElementById("new-purchase-url").value.trim();
+        const section = document.getElementById("new-section").value;
+        const reads = parseInt(document.getElementById("new-reads").value) || 0;
+
+        if (!id || !title || !author) {
+          showToast("Please fill all required fields (ID, Title, Author)", "error");
+          return;
+        }
+
+        // Convert Google Drive URL if needed
+        if (purchaseText && purchaseText !== "x") {
+          purchaseText = convertDriveUrl(purchaseText);
+        }
+
+        // Split categories into array
+        const categories = categoriesInput 
+          ? categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat)
+          : [];
+
+        try {
+          const bookRef = doc(db, "Books", id);
+          
+          await setDoc(bookRef, {
+            Title: title,
+            Author: author,
+            Categories: categories,
+            CoverURL: coverURL,
+            PurchaseText: purchaseText || "x", // Default to "x" if empty
+            Section: section,
+            Reads: reads
+          });
+          
+          closeModal("new-book-modal");
+          loadBooks();
+          showToast("Book added successfully!", "success");
+        } catch (error) {
+          console.error("Error adding book:", error);
+          showToast("Error: " + error.message, "error");
+        }
+      }
+
+      // Open Edit Modal - FIXED: Handle case sensitivity when reading data
+      async function openEditModal(id) {
+        try {
+          const docRef = doc(db, "Books", id);
+          
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            document.getElementById("edit-id").value = id;
+            document.getElementById("edit-title").value = data.Title || data.title || data.bookTitle || data.name || "";
+            document.getElementById("edit-author").value = data.Author || data.author || data.writer || "";
+            
+            // Handle categories
+            let categoriesText = "";
+            const rawCategories = data.Categories || data.categories;
+            if (rawCategories) {
+              if (Array.isArray(rawCategories)) {
+                categoriesText = rawCategories.join(", ");
+              } else if (typeof rawCategories === 'string') {
+                categoriesText = rawCategories.trim();
+              }
+            }
+            document.getElementById("edit-categories").value = categoriesText;
+            
+            // Set cover URL and preview
+            const coverURL = (data.CoverURL || data.coverURL || data.coverImage || data.image || "").trim();
+            document.getElementById("edit-cover-url").value = coverURL;
+            if (coverURL) {
+              document.getElementById("edit-cover-preview").innerHTML = 
+                `<img src="${coverURL}" alt="Cover" style="max-height: 150px; max-width: 150px; border-radius: 4px; object-fit: cover;">`;
+            } else {
+              document.getElementById("edit-cover-preview").innerHTML = "";
+            }
+            
+            // Set purchase URL (original format before conversion)
+            let purchaseText = (data.PurchaseText || data.purchaseText || data.pdfUrl || data.downloadUrl || "").trim();
+            // If it's a converted URL, try to show the original format for editing
+            if (purchaseText.includes('uc?export=download')) {
+              // Try to extract file ID and show in editable format
+              const match = purchaseText.match(/id=([^&]+)/);
+              if (match && match[1]) {
+                document.getElementById("edit-purchase-url").value = `https://drive.google.com/file/d/${match[1]}/view`;
+              } else {
+                document.getElementById("edit-purchase-url").value = purchaseText;
+              }
+            } else {
+              document.getElementById("edit-purchase-url").value = purchaseText;
+            }
+            
+            // Handle section
+            const section = (data.Section || data.section || "members").toLowerCase();
+            document.getElementById("edit-section").value = 
+              section === "members" || section === "readers" ? section : "members";
+            
+            // Handle reads
+            const reads = parseInt(data.Reads || data.reads || data.views || 0) || 0;
+            document.getElementById("edit-reads").value = reads;
+            
+            document.getElementById("edit-book-modal").style.display = "flex";
+          } else {
+            showToast("Document not found!", "error");
+          }
+        } catch (error) {
+          console.error("Error opening edit modal:", error);
+          showToast("Error: " + error.message, "error");
+        }
+      }
+
+      // Update Book - FIXED: Use consistent field names with capital first letter
+      async function updateBook() {
+        const id = document.getElementById("edit-id").value;
+        const title = document.getElementById("edit-title").value.trim();
+        const author = document.getElementById("edit-author").value.trim();
+        const categoriesInput = document.getElementById("edit-categories").value.trim();
+        const coverURL = document.getElementById("edit-cover-url").value.trim();
+        let purchaseText = document.getElementById("edit-purchase-url").value.trim();
+        const section = document.getElementById("edit-section").value;
+        const reads = parseInt(document.getElementById("edit-reads").value) || 0;
+
+        // Convert Google Drive URL if needed
+        if (purchaseText && purchaseText !== "x") {
+          purchaseText = convertDriveUrl(purchaseText);
+        }
+
+        // Split categories into array
+        const categories = categoriesInput 
+          ? categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat)
+          : [];
+
+        try {
+          const docRef = doc(db, "Books", id);
+          
+          await setDoc(docRef, {
+            Title: title,
+            Author: author,
+            Categories: categories,
+            CoverURL: coverURL,
+            PurchaseText: purchaseText || "x", // Default to "x" if empty
+            Section: section,
+            Reads: reads
+          }, { merge: true });
+          
+          closeModal("edit-book-modal");
+          loadBooks();
+          showToast("Book updated!", "success");
+        } catch (error) {
+          console.error("Error updating book:", error);
+          showToast("Error: " + error.message, "error");
+        }
+      }
+
+      // Delete Book
+      async function deleteBook(id) {
+        if (!confirm("⚠️ Delete this book? This action cannot be undone!")) return;
+        
+        try {
+          const docRef = doc(db, "Books", id);
+          
+          await deleteDoc(docRef);
+          loadBooks();
+          showToast("Book deleted!", "success");
+        } catch (error) {
+          console.error("Error deleting book:", error);
+          showToast("Error: " + error.message, "error");
+        }
+      }
+
+      // Close Modal
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      // Handle Cover Upload
+      async function handleCoverUpload(isEdit = false) {
+        const fileInput = isEdit ? document.getElementById("edit-cover-upload") : document.getElementById("cover-upload");
+        const preview = isEdit ? document.getElementById("edit-cover-preview") : document.getElementById("cover-preview");
+        const urlInput = isEdit ? document.getElementById("edit-cover-url") : document.getElementById("new-cover-url");
+        
+        const file = fileInput.files[0];
+        if (!file) {
+          showToast("Please select an image file", "error");
+          return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          showToast("Please select a valid image file (JPG, PNG, GIF, etc.)", "error");
+          return;
+        }
+        
+        showToast("Uploading cover image...", "info");
+        
+        const url = await uploadToCloudinary(file, "books/covers");
+        if (url) {
+          urlInput.value = url;
+          preview.innerHTML = `<img src="${url}" alt="Cover" style="max-height: 150px; max-width: 150px; border-radius: 4px; object-fit: cover;">`;
+          showToast("Cover image uploaded successfully!", "success");
+        }
+      }
+
+      // Attach Dynamic Buttons
+      function attachActionButtons() {
+        // Edit/Delete
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            openEditModal(id);
+          });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            deleteBook(id);
+          });
+        });
+      }
+
+      // DOM Ready
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initialize hidden URL inputs for cover images
+        const hiddenInputs = document.createElement('div');
+        hiddenInputs.style.display = 'none';
+        hiddenInputs.innerHTML = `
+          <input type="hidden" id="new-cover-url">
+          <input type="hidden" id="edit-cover-url">
+        `;
+        document.body.appendChild(hiddenInputs);
+        
+        // Login/Logout
+        document.getElementById("login-btn")?.addEventListener("click", login);
+        document.getElementById("logout-btn")?.addEventListener("click", logout);
+        
+        // Books Management
+        document.getElementById("new-book-btn")?.addEventListener("click", openNewBookModal);
+        document.getElementById("search")?.addEventListener("input", searchTable);
+        document.getElementById("add-book-btn")?.addEventListener("click", addNewBook);
+        document.getElementById("update-book-btn")?.addEventListener("click", updateBook);
+        document.getElementById("refresh-btn")?.addEventListener("click", () => {
+          loadBooks();
+          showToast("Data refreshed", "info");
+        });
+        document.getElementById("create-with-id-btn")?.addEventListener("click", (e) => {
+          const id = e.target.dataset.searchId;
+          if (id) {
+            document.getElementById("new-id").value = id;
+            openNewBookModal();
+          }
+        });
+        
+        // Cover Upload
+        document.getElementById("cover-upload-btn")?.addEventListener("click", () => {
+          document.getElementById("cover-upload").click();
+        });
+        document.getElementById("cover-upload")?.addEventListener("change", () => handleCoverUpload(false));
+        
+        document.getElementById("edit-cover-upload-btn")?.addEventListener("click", () => {
+          document.getElementById("edit-cover-upload").click();
+        });
+        document.getElementById("edit-cover-upload")?.addEventListener("change", () => handleCoverUpload(true));
+        
+        // Close modals
+        document.getElementById("close-new-modal")?.addEventListener("click", () => closeModal("new-book-modal"));
+        document.getElementById("close-edit-modal")?.addEventListener("click", () => closeModal("edit-book-modal"));
+        
+        window.addEventListener("click", (e) => {
+          if (e.target.classList.contains("modal")) {
+            closeModal("new-book-modal");
+            closeModal("edit-book-modal");
+          }
+        });
+      });
+
+      // Auth State
+      auth.onAuthStateChanged((user) => {
+        console.log("Auth state changed:", user ? "User logged in" : "No user logged in");
+        if (user) {
+          document.getElementById("login-screen").style.display = "none";
+          document.getElementById("dashboard").style.display = "block";
+          loadBooks();
+        } else {
+          document.getElementById("dashboard").style.display = "none";
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
+
+      // Export Functions (for module)
+      export {
+        login,
+        logout,
+        openNewBookModal,
+        addNewBook,
+        updateBook,
+        deleteBook,
+        searchTable,
+        closeModal
+      };
+    </script>
   </body>
 </html>
