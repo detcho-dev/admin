@@ -28,10 +28,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Cloudinary Configuration - Update with your actual credentials
-const CLOUDINARY_CLOUD_NAME = "dqyxzsnyq"; // Replace with your Cloudinary cloud name
-const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Replace with your upload preset
-
 // Toast Notification
 function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
@@ -58,12 +54,11 @@ async function login() {
     await signInWithEmailAndPassword(auth, email, password);
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
-    loadBooks();
+    loadProjects();
     errorEl.style.display = "none";
   } catch (error) {
     errorEl.textContent = "Error: " + error.message;
     errorEl.style.display = "block";
-    console.error("Login error:", error);
   }
 }
 
@@ -78,98 +73,40 @@ async function logout() {
   }
 }
 
-// Cloudinary Upload Function
-async function uploadToCloudinary(file, folder) {
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-    showToast("Cloudinary configuration missing. Please update the code with your credentials.", "error");
-    return null;
+function getSupportStatusText(endDateString) {
+  // التعامل مع "un" كدعم غير محدود
+  if (!endDateString || endDateString.trim().toLowerCase() === "x") {
+    return "Unavilable";
   }
 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-  formData.append('folder', folder);
-
-  try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await response.json();
-    
-    if (data.secure_url) {
-      return data.secure_url;
-    } else {
-      throw new Error(data.error?.message || 'Upload failed');
-    }
-  } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    showToast(`Upload failed: ${error.message}`, 'error');
-    return null;
-  }
-}
-
-// Load Books - Using EXACT collection name "Books" and handling field case sensitivity
-async function loadBooks() {
-  const tableBody = document.getElementById("table-body");
-  const noResultsDiv = document.getElementById("no-results");
   
-  tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">Loading...</td></tr>';
+// Load Projects
+async function loadProjects() {
+  const tableBody = document.getElementById("table-body");
+  tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center">Loading...</td></tr>';
 
   try {
     const querySnapshot = await getDocs(collection(db, "Books"));
-    
-    console.log(`Found ${querySnapshot.size} books in "Books" collection`);
-    
+    tableBody.innerHTML = "";
+
     if (querySnapshot.empty) {
-      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">No books found in "Books" collection</td></tr>';
-      noResultsDiv.style.display = "block";
+      tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center">No books found</td></tr>';
       return;
     }
 
-    tableBody.innerHTML = "";
-    noResultsDiv.style.display = "none";
-
     querySnapshot.forEach((doc) => {
-      const data = doc.data() || {};
-      console.log("Processing book:", doc.id, data);
-      
-      // Handle case sensitivity for field names - Check both cases
-      const title = data.Title || data.title || data.bookTitle || data.name || "-";
-      const author = data.Author || data.author || data.writer || "-";
-      
-      // Handle categories (array or string)
-      let categories = "-";
-      const rawCategories = data.Categories || data.categories;
-      if (rawCategories) {
-        if (Array.isArray(rawCategories)) {
-          categories = rawCategories.join(", ");
-        } else if (typeof rawCategories === 'string') {
-          categories = rawCategories.trim();
-        }
-      }
-      
-      // Handle URLs (trim whitespace and handle missing fields)
-      const coverURL = (data.CoverURL || data.coverURL || data.coverImage || data.image || "").trim();
-      const purchaseText = (data.PurchaseText || data.purchaseText || data.pdfUrl || data.downloadUrl || "").trim();
-      const section = (data.Section || data.section || "members").toLowerCase();
-      const reads = parseInt(data.Reads || data.reads || data.views || 0) || 0;
-      
-      // Format section display
-      const sectionDisplay = section === "members" ? "Members" : 
-                           section === "readers" ? "Readers" : 
-                           section.charAt(0).toUpperCase() + section.slice(1);
+      const data = doc.data();
+
+     
+     
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${doc.id}</td>
-        <td>${title}</td>
-        <td>${author}</td>
-        <td>${categories}</td>
-        <td>${coverURL ? `<img src="${coverURL}" alt="Cover" style="max-height: 100px; max-width: 100px; border-radius: 4px; object-fit: cover;">` : "-"}</td>
-        <td>${sectionDisplay}</td>
-        <td>${reads}</td>
-        <td>${purchaseText ? `<a href="${purchaseText}" target="_blank" class="view-btn">Download PDF</a>` : "-"}</td>
+        <td>${data.Title || "-"}</td>
+        <td><img src="${data.CoverURL || "-"}" height="40px" width="20px"></td>
+        <td>${data.Reads || "-"}</td>
+        <td>${getSupportStatusText(data.PurchaseText)}</td>
         <td class="actions">
           <button class="edit-btn" data-id="${doc.id}">Edit</button>
           <button class="delete-btn" data-id="${doc.id}">Delete</button>
@@ -178,12 +115,12 @@ async function loadBooks() {
       tableBody.appendChild(row);
     });
 
+    //Ended Here (Add Categories in table)
+
     attachActionButtons();
-    showToast(`Loaded ${querySnapshot.size} books successfully!`, "success");
   } catch (error) {
-    console.error("Error loading books:", error);
-    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ff4444">Error: ${error.message}</td></tr>`;
-    showToast("Failed to load books: " + error.message, "error");
+    tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#ff4444">Error: ${error.message}</td></tr>`;
+    console.error("Error loading projects:", error);
   }
 }
 
@@ -203,7 +140,7 @@ function searchTable() {
 
   let hasMatch = false;
   document.querySelectorAll("#table-body tr").forEach(row => {
-    const cells = row.querySelectorAll("td:not(.actions)");
+    const cells = row.querySelectorAll("td:not(.actions):not(:nth-child(9))");
     let match = false;
     cells.forEach(cell => {
       if (cell.textContent.toLowerCase().includes(searchTerm)) match = true;
@@ -229,64 +166,45 @@ function searchTable() {
 }
 
 // Open New Modal
-function openNewBookModal() {
-  // Reset form fields
-  document.getElementById("new-id").value = "";
-  document.getElementById("new-title").value = "";
-  document.getElementById("new-author").value = "";
-  document.getElementById("new-categories").value = "";
-  document.getElementById("new-cover-url").value = "";
-  document.getElementById("new-purchase-url").value = "";
-  document.getElementById("new-section").value = "members";
-  document.getElementById("new-reads").value = "0";
-  document.getElementById("cover-preview").innerHTML = "";
-  document.getElementById("purchase-preview").innerHTML = "";
-  
-  document.getElementById("new-book-modal").style.display = "block";
+function openNewProjectModal() {
+  document.getElementById("new-project-modal").style.display = "block";
 }
 
-// Add Book
-async function addNewBook() {
+// Add Project
+async function addNewProject() {
   const id = document.getElementById("new-id").value.trim();
-  const title = document.getElementById("new-title").value.trim();
-  const author = document.getElementById("new-author").value.trim();
-  const categoriesInput = document.getElementById("new-categories").value.trim();
-  const coverURL = document.getElementById("new-cover-url").value.trim();
-  const purchaseText = document.getElementById("new-purchase-url").value.trim();
-  const section = document.getElementById("new-section").value;
-  const reads = parseInt(document.getElementById("new-reads").value) || 0;
+  const customer = document.getElementById("new-customer").value.trim();
+  const projectName = document.getElementById("new-project-name").value.trim();
+  const status = document.getElementById("new-status").value.trim();
+  const supportStatus = document.getElementById("new-support-status").value.trim();
+  const deployment = document.getElementById("new-deployment").value.trim();
+  const supportEnd = document.getElementById("new-support-end").value.trim();
+  const url = document.getElementById("new-url").value.trim();
 
-  if (!id || !title || !author) {
-    showToast("Please fill all required fields (ID, Title, Author)", "error");
+  if (!id || !customer || !projectName || !url) {
+    showToast("Please fill all required fields", "error");
     return;
   }
 
-  // Split categories into array
-  const categories = categoriesInput 
-    ? categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat)
-    : [];
+  try { new URL(url); } catch {
+    showToast("Please enter a valid URL", "error");
+    return;
+  }
 
   try {
-    // Use the EXACT collection name "Books" with capital B
-    const bookRef = doc(db, "Books", id);
-    
-    await setDoc(bookRef, {
-      title: title,
-      author: author,
-      categories: categories,
-      coverURL: coverURL,
-      purchaseText: purchaseText,
-      section: section,
-      reads: reads,
-      documentID: id,
-      createdAt: new Date().toISOString()
+    await setDoc(doc(db, "Books", id), {
+      customerName: customer,
+      projectName: projectName,
+      projectStatus: status,
+      supportStatus: supportStatus,
+      deploymentDate: deployment,
+      supportEndDate: supportEnd,
+      url: url,
     });
-    
-    closeModal("new-book-modal");
-    loadBooks();
-    showToast("Book added successfully!", "success");
+    closeModal("new-project-modal");
+    loadProjects();
+    showToast("Project added successfully!", "success");
   } catch (error) {
-    console.error("Error adding book:", error);
     showToast("Error: " + error.message, "error");
   }
 }
@@ -294,124 +212,64 @@ async function addNewBook() {
 // Open Edit Modal
 async function openEditModal(id) {
   try {
-    // Use the EXACT collection name "Books" with capital B
     const docRef = doc(db, "Books", id);
-    
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      console.log("Editing book:", data);
-      
       document.getElementById("edit-id").value = id;
-      document.getElementById("edit-title").value = data.title || data.bookTitle || data.name || "";
-      document.getElementById("edit-author").value = data.author || data.writer || "";
-      
-      // Handle categories
-      let categoriesText = "";
-      if (data.categories) {
-        if (Array.isArray(data.categories)) {
-          categoriesText = data.categories.join(", ");
-        } else if (typeof data.categories === 'string') {
-          categoriesText = data.categories;
-        } else if (typeof data.categories === 'object') {
-          categoriesText = Object.values(data.categories).join(", ");
-        }
-      }
-      document.getElementById("edit-categories").value = categoriesText;
-      
-      // Set cover URL and preview
-      const coverURL = data.coverURL || data.coverImage || data.image || data.thumbnail || "";
-      document.getElementById("edit-cover-url").value = coverURL;
-      if (coverURL) {
-        document.getElementById("edit-cover-preview").innerHTML = 
-          `<img src="${coverURL}" alt="Cover" style="max-height: 150px; max-width: 150px; border-radius: 4px;">`;
-      } else {
-        document.getElementById("edit-cover-preview").innerHTML = "";
-      }
-      
-      // Set purchase URL and preview
-      const purchaseText = data.purchaseText || data.pdfUrl || data.downloadUrl || data.fileUrl || "";
-      document.getElementById("edit-purchase-url").value = purchaseText;
-      if (purchaseText) {
-        document.getElementById("edit-purchase-preview").innerHTML = 
-          `<a href="${purchaseText}" target="_blank" class="view-btn">Download PDF</a>`;
-      } else {
-        document.getElementById("edit-purchase-preview").innerHTML = "";
-      }
-      
-      // Handle section
-      const section = data.section || data.category || "members";
-      document.getElementById("edit-section").value = 
-        section === "members" || section === "readers" ? section : "members";
-      
-      // Handle reads
-      const reads = data.reads || data.views || data.downloadCount || 0;
-      document.getElementById("edit-reads").value = reads;
-      
-      document.getElementById("edit-book-modal").style.display = "block";
+      document.getElementById("edit-customer").value = data.customerName || "";
+      document.getElementById("edit-project-name").value = data.projectName || "";
+      document.getElementById("edit-status").value = data.projectStatus || "Live";
+      document.getElementById("edit-support-status").value = data.supportStatus || "Active";
+      document.getElementById("edit-deployment").value = data.deploymentDate || "";
+      document.getElementById("edit-support-end").value = data.supportEndDate || "";
+      document.getElementById("edit-url").value = data.url || "";
+      document.getElementById("edit-project-modal").style.display = "block";
     } else {
       showToast("Document not found!", "error");
     }
   } catch (error) {
-    console.error("Error opening edit modal:", error);
     showToast("Error: " + error.message, "error");
   }
 }
 
-// Update Book
-async function updateBook() {
+// Update Project
+async function updateProject() {
   const id = document.getElementById("edit-id").value;
-  const title = document.getElementById("edit-title").value.trim();
-  const author = document.getElementById("edit-author").value.trim();
-  const categoriesInput = document.getElementById("edit-categories").value.trim();
-  const coverURL = document.getElementById("edit-cover-url").value.trim();
-  const purchaseText = document.getElementById("edit-purchase-url").value.trim();
-  const section = document.getElementById("edit-section").value;
-  const reads = parseInt(document.getElementById("edit-reads").value) || 0;
-
-  // Split categories into array
-  const categories = categoriesInput 
-    ? categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat)
-    : [];
+  const customer = document.getElementById("edit-customer").value.trim();
+  const projectName = document.getElementById("edit-project-name").value.trim();
+  const status = document.getElementById("edit-status").value.trim();
+  const supportStatus = document.getElementById("edit-support-status").value.trim();
+  const deployment = document.getElementById("edit-deployment").value.trim();
+  const supportEnd = document.getElementById("edit-support-end").value.trim();
+  const url = document.getElementById("edit-url").value.trim();
 
   try {
-    // Use the EXACT collection name "Books" with capital B
-    const docRef = doc(db, "Books", id);
-    
-    await setDoc(docRef, {
-      title: title,
-      author: author,
-      categories: categories,
-      coverURL: coverURL,
-      purchaseText: purchaseText,
-      section: section,
-      reads: reads,
-      documentID: id,
-      updatedAt: new Date().toISOString()
+    await setDoc(doc(db, "Books", id), {
+      customerName: customer,
+      projectName: projectName,
+      projectStatus: status,
+      supportStatus: supportStatus,
+      deploymentDate: deployment,
+      supportEndDate: supportEnd,
+      url: url,
     }, { merge: true });
-    
-    closeModal("edit-book-modal");
-    loadBooks();
-    showToast("Book updated!", "success");
+    closeModal("edit-project-modal");
+    loadProjects();
+    showToast("Project updated!", "success");
   } catch (error) {
-    console.error("Error updating book:", error);
     showToast("Error: " + error.message, "error");
   }
 }
 
-// Delete Book
-async function deleteBook(id) {
-  if (!confirm("⚠️ Delete this book? This action cannot be undone!")) return;
-  
+// Delete Project
+async function deleteProject(id) {
+  if (!confirm("⚠️ Delete this project?")) return;
   try {
-    // Use the EXACT collection name "Books" with capital B
-    const docRef = doc(db, "Books", id);
-    
-    await deleteDoc(docRef);
-    loadBooks();
-    showToast("Book deleted!", "success");
+    await deleteDoc(doc(db, "Books", id));
+    loadProjects();
+    showToast("Project deleted!", "success");
   } catch (error) {
-    console.error("Error deleting book:", error);
     showToast("Error: " + error.message, "error");
   }
 }
@@ -421,155 +279,74 @@ function closeModal(modalId) {
   document.getElementById(modalId).style.display = "none";
 }
 
-// Handle Cover Upload
-async function handleCoverUpload(isEdit = false) {
-  const fileInput = isEdit ? document.getElementById("edit-cover-upload") : document.getElementById("cover-upload");
-  const preview = isEdit ? document.getElementById("edit-cover-preview") : document.getElementById("cover-preview");
-  const urlInput = isEdit ? document.getElementById("edit-cover-url") : document.getElementById("new-cover-url");
-  
-  const file = fileInput.files[0];
-  if (!file) {
-    showToast("Please select an image file", "error");
-    return;
-  }
-  
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    showToast("Please select a valid image file (JPG, PNG, GIF, etc.)", "error");
-    return;
-  }
-  
-  showToast("Uploading cover image...", "info");
-  
-  const url = await uploadToCloudinary(file, "books/covers");
-  if (url) {
-    urlInput.value = url;
-    preview.innerHTML = `<img src="${url}" alt="Cover" style="max-height: 150px; max-width: 150px; border-radius: 4px;">`;
-    showToast("Cover image uploaded successfully!", "success");
-  }
-}
-
-// Handle Purchase PDF Upload
-async function handlePurchaseUpload(isEdit = false) {
-  const fileInput = isEdit ? document.getElementById("edit-purchase-upload") : document.getElementById("purchase-upload");
-  const preview = isEdit ? document.getElementById("edit-purchase-preview") : document.getElementById("purchase-preview");
-  const urlInput = isEdit ? document.getElementById("edit-purchase-url") : document.getElementById("new-purchase-url");
-  
-  const file = fileInput.files[0];
-  if (!file) {
-    showToast("Please select a PDF file", "error");
-    return;
-  }
-  
-  // Validate file type
-  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-    showToast("Please select a valid PDF file", "error");
-    return;
-  }
-  
-  showToast("Uploading PDF file...", "info");
-  
-  const url = await uploadToCloudinary(file, "books/pdfs");
-  if (url) {
-    urlInput.value = url;
-    preview.innerHTML = `<a href="${url}" target="_blank" class="view-btn">Download PDF</a>`;
-    showToast("PDF uploaded successfully!", "success");
-  }
-}
-
 // Attach Dynamic Buttons
 function attachActionButtons() {
-  // Edit/Delete
-  document.querySelectorAll('.edit-btn').forEach(btn => {
+  // Copy Link
+  document.querySelectorAll('.copy-link-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.target.dataset.id;
-      openEditModal(id);
+      const url = e.target.dataset.url || 'https://example.com';
+      const encoded = encodeURIComponent(url);
+      const link = `https://detcho-dev.github.io/Yossef-DEV/port?url=${encoded}&id=${id}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link).then(() => {
+          showToast("Link copied!", "success");
+        }).catch(() => {
+          prompt("Copy this link:", link);
+        });
+      } else {
+        prompt("Copy this link:", link);
+      }
     });
   });
-  
+
+  // Edit/Delete
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => openEditModal(e.target.dataset.id));
+  });
   document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = e.target.dataset.id;
-      deleteBook(id);
-    });
+    btn.addEventListener('click', (e) => deleteProject(e.target.dataset.id));
   });
 }
 
 // DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize hidden URL inputs
-  const hiddenInputs = document.createElement('div');
-  hiddenInputs.style.display = 'none';
-  hiddenInputs.innerHTML = `
-    <input type="hidden" id="new-cover-url">
-    <input type="hidden" id="new-purchase-url">
-    <input type="hidden" id="edit-cover-url">
-    <input type="hidden" id="edit-purchase-url">
-  `;
-  document.body.appendChild(hiddenInputs);
-  
-  // Login/Logout
   document.getElementById("login-btn")?.addEventListener("click", login);
   document.getElementById("logout-btn")?.addEventListener("click", logout);
-  
-  // Books Management
-  document.getElementById("new-book-btn")?.addEventListener("click", openNewBookModal);
+  document.getElementById("new-project-btn")?.addEventListener("click", openNewProjectModal);
   document.getElementById("search")?.addEventListener("input", searchTable);
-  document.getElementById("add-book-btn")?.addEventListener("click", addNewBook);
-  document.getElementById("update-book-btn")?.addEventListener("click", updateBook);
+  document.getElementById("add-project-btn")?.addEventListener("click", addNewProject);
+  document.getElementById("update-project-btn")?.addEventListener("click", updateProject);
   document.getElementById("refresh-btn")?.addEventListener("click", () => {
-    loadBooks();
+    loadProjects();
     showToast("Data refreshed", "info");
   });
   document.getElementById("create-with-id-btn")?.addEventListener("click", (e) => {
     const id = e.target.dataset.searchId;
     if (id) {
       document.getElementById("new-id").value = id;
-      openNewBookModal();
+      openNewProjectModal();
     }
   });
   
-  // Cover Upload
-  document.getElementById("cover-upload-btn")?.addEventListener("click", () => {
-    document.getElementById("cover-upload").click();
-  });
-  document.getElementById("cover-upload")?.addEventListener("change", () => handleCoverUpload(false));
-  
-  document.getElementById("edit-cover-upload-btn")?.addEventListener("click", () => {
-    document.getElementById("edit-cover-upload").click();
-  });
-  document.getElementById("edit-cover-upload")?.addEventListener("change", () => handleCoverUpload(true));
-  
-  // Purchase PDF Upload
-  document.getElementById("purchase-upload-btn")?.addEventListener("click", () => {
-    document.getElementById("purchase-upload").click();
-  });
-  document.getElementById("purchase-upload")?.addEventListener("change", () => handlePurchaseUpload(false));
-  
-  document.getElementById("edit-purchase-upload-btn")?.addEventListener("click", () => {
-    document.getElementById("edit-purchase-upload").click();
-  });
-  document.getElementById("edit-purchase-upload")?.addEventListener("change", () => handlePurchaseUpload(true));
-  
   // Close modals
-  document.getElementById("close-new-modal")?.addEventListener("click", () => closeModal("new-book-modal"));
-  document.getElementById("close-edit-modal")?.addEventListener("click", () => closeModal("edit-book-modal"));
+  document.getElementById("close-new-modal")?.addEventListener("click", () => closeModal("new-project-modal"));
+  document.getElementById("close-edit-modal")?.addEventListener("click", () => closeModal("edit-project-modal"));
   
   window.addEventListener("click", (e) => {
     if (e.target.classList.contains("modal")) {
-      closeModal("new-book-modal");
-      closeModal("edit-book-modal");
+      closeModal("new-project-modal");
+      closeModal("edit-project-modal");
     }
   });
 });
 
 // Auth State
 auth.onAuthStateChanged((user) => {
-  console.log("Auth state changed:", user ? "User logged in" : "No user logged in");
   if (user) {
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
-    loadBooks();
+    loadProjects();
   } else {
     document.getElementById("dashboard").style.display = "none";
     document.getElementById("login-screen").style.display = "block";
@@ -580,10 +357,10 @@ auth.onAuthStateChanged((user) => {
 export {
   login,
   logout,
-  openNewBookModal,
-  addNewBook,
-  updateBook,
-  deleteBook,
+  openNewProjectModal,
+  addNewProject,
+  updateProject,
+  deleteProject,
   searchTable,
   closeModal
 };
