@@ -105,6 +105,9 @@ async function loadProjects() {
         <td>${doc.id}</td>
         <td>${data.Title || "-"}</td>
         <td><img src="${data.CoverURL || "-"}" height="40px" width="20px"></td>
+        <td>${data.Author || "-"}</td>
+        <td>${data.Categories || "-"}</td>
+        <td>${data.Section || "-"}</td>
         <td>${data.Reads || "-"}</td>
         <td>${getSupportStatusText(data.PurchaseText)}</td>
         <td class="actions">
@@ -115,7 +118,7 @@ async function loadProjects() {
       tableBody.appendChild(row);
     });
 
-    //Ended Here (Add Categories in table)
+    
 
     attachActionButtons();
   } catch (error) {
@@ -176,7 +179,6 @@ async function addNewProject() {
   const customer = document.getElementById("new-customer").value.trim();
   const projectName = document.getElementById("new-project-name").value.trim();
   const status = document.getElementById("new-status").value.trim();
-  const supportStatus = document.getElementById("new-support-status").value.trim();
   const deployment = document.getElementById("new-deployment").value.trim();
   const supportEnd = document.getElementById("new-support-end").value.trim();
   const url = document.getElementById("new-url").value.trim();
@@ -193,17 +195,16 @@ async function addNewProject() {
 
   try {
     await setDoc(doc(db, "Books", id), {
-      customerName: customer,
-      projectName: projectName,
-      projectStatus: status,
-      supportStatus: supportStatus,
-      deploymentDate: deployment,
-      supportEndDate: supportEnd,
-      url: url,
+      Title: customer,
+      CoverURL: projectName,
+      Section: status,
+      Reads: deployment,
+      Categories: supportEnd,
+      PurchaseText: url,
     });
     closeModal("new-project-modal");
     loadProjects();
-    showToast("Project added successfully!", "success");
+    showToast("Book added successfully!", "success");
   } catch (error) {
     showToast("Error: " + error.message, "error");
   }
@@ -217,13 +218,12 @@ async function openEditModal(id) {
     if (docSnap.exists()) {
       const data = docSnap.data();
       document.getElementById("edit-id").value = id;
-      document.getElementById("edit-customer").value = data.customerName || "";
-      document.getElementById("edit-project-name").value = data.projectName || "";
-      document.getElementById("edit-status").value = data.projectStatus || "Live";
-      document.getElementById("edit-support-status").value = data.supportStatus || "Active";
-      document.getElementById("edit-deployment").value = data.deploymentDate || "";
-      document.getElementById("edit-support-end").value = data.supportEndDate || "";
-      document.getElementById("edit-url").value = data.url || "";
+      document.getElementById("edit-customer").value = data.Title || "";
+      document.getElementById("edit-project-name").value = data.CoverURL || "";
+      document.getElementById("edit-status").value = data.Section || "Live";
+      document.getElementById("edit-deployment").value = data.Reads || "";
+      document.getElementById("edit-support-end").value = data.Categories || "";
+      document.getElementById("edit-url").value = data.PurchaseText || "";
       document.getElementById("edit-project-modal").style.display = "block";
     } else {
       showToast("Document not found!", "error");
@@ -239,24 +239,22 @@ async function updateProject() {
   const customer = document.getElementById("edit-customer").value.trim();
   const projectName = document.getElementById("edit-project-name").value.trim();
   const status = document.getElementById("edit-status").value.trim();
-  const supportStatus = document.getElementById("edit-support-status").value.trim();
   const deployment = document.getElementById("edit-deployment").value.trim();
   const supportEnd = document.getElementById("edit-support-end").value.trim();
   const url = document.getElementById("edit-url").value.trim();
 
   try {
     await setDoc(doc(db, "Books", id), {
-      customerName: customer,
-      projectName: projectName,
-      projectStatus: status,
-      supportStatus: supportStatus,
-      deploymentDate: deployment,
-      supportEndDate: supportEnd,
-      url: url,
+      Title: customer,
+      CoverURL: projectName,
+      Section: status,
+      Reads: deployment,
+      Categories: supportEnd,
+      PurchaseText: url,
     }, { merge: true });
     closeModal("edit-project-modal");
     loadProjects();
-    showToast("Project updated!", "success");
+    showToast("Book updated!", "success");
   } catch (error) {
     showToast("Error: " + error.message, "error");
   }
@@ -264,11 +262,11 @@ async function updateProject() {
 
 // Delete Project
 async function deleteProject(id) {
-  if (!confirm("⚠️ Delete this project?")) return;
+  if (!confirm("⚠️ Delete this book?")) return;
   try {
     await deleteDoc(doc(db, "Books", id));
     loadProjects();
-    showToast("Project deleted!", "success");
+    showToast("Book deleted!", "success");
   } catch (error) {
     showToast("Error: " + error.message, "error");
   }
