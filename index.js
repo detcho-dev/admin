@@ -78,37 +78,34 @@ function getSupportStatusText(endDateString) {
   if (!endDateString || endDateString.trim().toLowerCase() === "x") {
     return "Unavilable";
   }
+}
 
   
 // Load Projects
 async function loadProjects() {
   const tableBody = document.getElementById("table-body");
-  tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center">Loading...</td></tr>';
+  tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">Loading...</td></tr>';
 
   try {
     const querySnapshot = await getDocs(collection(db, "Books"));
     tableBody.innerHTML = "";
 
     if (querySnapshot.empty) {
-      tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center">No books found</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center">No books found</td></tr>';
       return;
     }
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-
-     
-     
-
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${doc.id}</td>
         <td>${data.Title || "-"}</td>
-        <td><img src="${data.CoverURL || "-"}" height="40px" width="20px"></td>
+        <td><img src="${data.CoverURL || ""}" height="40" width="30" style="object-fit: cover;"></td>
         <td>${data.Author || "-"}</td>
         <td>${data.Categories || "-"}</td>
         <td>${data.Section || "-"}</td>
-        <td>${data.Reads || "-"}</td>
+        <td>${data.Reads || "0"}</td>
         <td>${getSupportStatusText(data.PurchaseText)}</td>
         <td class="actions">
           <button class="edit-btn" data-id="${doc.id}">Edit</button>
@@ -118,12 +115,9 @@ async function loadProjects() {
       tableBody.appendChild(row);
     });
 
-    
-
     attachActionButtons();
   } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#ff4444">Error: ${error.message}</td></tr>`;
-    console.error("Error loading projects:", error);
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ff4444">Error: ${error.message}</td></tr>`;
   }
 }
 
@@ -176,40 +170,36 @@ function openNewProjectModal() {
 // Add Project
 async function addNewProject() {
   const id = document.getElementById("new-id").value.trim();
-  const customer = document.getElementById("new-customer").value.trim();
-  const projectName = document.getElementById("new-project-name").value.trim();
-  const status = document.getElementById("new-status").value.trim();
-  const deployment = document.getElementById("new-deployment").value.trim();
-  const supportEnd = document.getElementById("new-support-end").value.trim();
-  const url = document.getElementById("new-url").value.trim();
+  const title = document.getElementById("new-customer").value.trim();
+  const author = document.getElementById("new-author").value.trim(); // Added
+  const cover = document.getElementById("new-project-name").value.trim();
+  const section = document.getElementById("new-status").value.trim();
+  const reads = document.getElementById("new-deployment").value.trim();
+  const categories = document.getElementById("new-support-end").value.trim();
+  const purchaseText = document.getElementById("new-url").value.trim();
 
-  if (!id || !customer || !projectName || !url) {
-    showToast("Please fill all required fields", "error");
-    return;
-  }
-
-  try { new URL(url); } catch {
-    showToast("Please enter a valid URL", "error");
+  if (!id || !title || !author) {
+    showToast("ID, Title, and Author are required", "error");
     return;
   }
 
   try {
     await setDoc(doc(db, "Books", id), {
-      Title: customer,
-      CoverURL: projectName,
-      Section: status,
-      Reads: deployment,
-      Categories: supportEnd,
-      PurchaseText: url,
+      Title: title,
+      Author: author,
+      CoverURL: cover,
+      Section: section,
+      Reads: Number(reads), // Ensure number type
+      Categories: categories,
+      PurchaseText: purchaseText,
     });
     closeModal("new-project-modal");
     loadProjects();
-    showToast("Book added successfully!", "success");
+    showToast("Book added!", "success");
   } catch (error) {
-    showToast("Error: " + error.message, "error");
+    showToast(error.message, "error");
   }
 }
-
 // Open Edit Modal
 async function openEditModal(id) {
   try {
