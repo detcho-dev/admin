@@ -73,14 +73,6 @@ async function logout() {
   }
 }
 
-function getSupportStatusText(endDateString) {
-  // التعامل مع "un" كدعم غير محدود
-  if (!endDateString || endDateString.trim().toLowerCase() === "x") {
-    return "Unavilable";
-  }
-}
-
-  
 // Load Projects
 async function loadProjects() {
   const tableBody = document.getElementById("table-body");
@@ -97,16 +89,26 @@ async function loadProjects() {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+      
+      // Handle array formatting for Categories
+      const categoriesDisplay = Array.isArray(data.Categories) 
+        ? data.Categories.join(", ") 
+        : (data.Categories || "-");
+
+      const linkDisplay = data.PurchaseText 
+        ? `<a href="${data.PurchaseText}" target="_blank" class="view-btn">Download</a>` 
+        : "-";
+
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${doc.id}</td>
+        <td>${data.DocumentID || doc.id}</td>
         <td>${data.Title || "-"}</td>
-        <td><img src="${data.CoverURL || ""}" height="40" width="30" style="object-fit: cover;"></td>
+        <td><img src="${data.CoverURL || ""}" height="40" width="30" style="object-fit: cover; border-radius: 4px;"></td>
         <td>${data.Author || "-"}</td>
-        <td>${data.Categories || "-"}</td>
+        <td>${categoriesDisplay}</td>
         <td>${data.Section || "-"}</td>
         <td>${data.Reads || "0"}</td>
-        <td>${getSupportStatusText(data.PurchaseText)}</td>
+        <td>${linkDisplay}</td>
         <td class="actions">
           <button class="edit-btn" data-id="${doc.id}">Edit</button>
           <button class="delete-btn" data-id="${doc.id}">Delete</button>
@@ -124,7 +126,6 @@ async function loadProjects() {
 // Search
 function searchTable() {
   const searchTerm = document.getElementById("search").value.trim().toLowerCase();
-  const tableBody = document.getElementById("table-body");
   const noResultsDiv = document.getElementById("no-results");
   const createBtn = document.getElementById("create-with-id-btn");
   
@@ -137,7 +138,7 @@ function searchTable() {
 
   let hasMatch = false;
   document.querySelectorAll("#table-body tr").forEach(row => {
-    const cells = row.querySelectorAll("td:not(.actions):not(:nth-child(9))");
+    const cells = row.querySelectorAll("td:not(.actions)");
     let match = false;
     cells.forEach(cell => {
       if (cell.textContent.toLowerCase().includes(searchTerm)) match = true;
@@ -170,36 +171,45 @@ function openNewProjectModal() {
 // Add Project
 async function addNewProject() {
   const id = document.getElementById("new-id").value.trim();
-  const title = document.getElementById("new-customer").value.trim();
-  const author = document.getElementById("new-author").value.trim(); // Added
-  const cover = document.getElementById("new-project-name").value.trim();
-  const section = document.getElementById("new-status").value.trim();
-  const reads = document.getElementById("new-deployment").value.trim();
-  const categories = document.getElementById("new-support-end").value.trim();
-  const purchaseText = document.getElementById("new-url").value.trim();
+  const title = document.getElementById("new-title").value.trim();
+  const author = document.getElementById("new-author").value.trim();
+  const cover = document.getElementById("new-cover").value.trim();
+  const section = document.getElementById("new-section").value.trim();
+  const reads = document.getElementById("new-reads").value.trim();
+  const categoriesInput = document.getElementById("new-categories").value.trim();
+  const purchaseText = document.getElementById("new-purchase-text").value.trim();
 
-  if (!id || !title || !author) {
-    showToast("ID, Title, and Author are required", "error");
+  if (!id || !title) {
+    showToast("ID and Title are required", "error");
     return;
   }
 
+  // Convert comma-separated string to array
+  const categoriesArray = categoriesInput.split(',').map(item => item.trim()).filter(item => item !== "");
+
   try {
     await setDoc(doc(db, "Books", id), {
+      DocumentID: id,
       Title: title,
       Author: author,
       CoverURL: cover,
       Section: section,
-      Reads: Number(reads), // Ensure number type
-      Categories: categories,
+      Reads: Number(reads) || 0, 
+      Categories: categoriesArray,
       PurchaseText: purchaseText,
     });
     closeModal("new-project-modal");
+    
+    // Clear inputs after save
+    document.querySelectorAll('#new-project-modal input').forEach(input => input.value = '');
+    
     loadProjects();
     showToast("Book added!", "success");
   } catch (error) {
     showToast(error.message, "error");
   }
 }
+
 // Open Edit Modal
 async function openEditModal(id) {
   try {
@@ -207,13 +217,18 @@ async function openEditModal(id) {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
+      
+      const categoriesString = Array.isArray(data.Categories) ? data.Categories.join(", ") : data.Categories;
+
       document.getElementById("edit-id").value = id;
-      document.getElementById("edit-customer").value = data.Title || "";
-      document.getElementById("edit-project-name").value = data.CoverURL || "";
-      document.getElementById("edit-status").value = data.Section || "Live";
-      document.getElementById("edit-deployment").value = data.Reads || "";
-      document.getElementById("edit-support-end").value = data.Categories || "";
-      document.getElementById("edit-url").value = data.PurchaseText || "";
+      document.getElementById("edit-title").value = data.Title || "";
+      document.getElementById("edit-author").value = data.Author || "";
+      document.getElementById("edit-cover").value = data.CoverURL || "";
+      document.getElementById("edit-section").value = data.Section || "members";
+      document.getElementById("edit-reads").value = data.Reads || "0";
+      document.getElementById("edit-categories").value = categoriesString || "";
+      document.getElementById("edit-purchase-text").value = data.PurchaseText || "";
+      
       document.getElementById("edit-project-modal").style.display = "block";
     } else {
       showToast("Document not found!", "error");
@@ -226,22 +241,28 @@ async function openEditModal(id) {
 // Update Project
 async function updateProject() {
   const id = document.getElementById("edit-id").value;
-  const customer = document.getElementById("edit-customer").value.trim();
-  const projectName = document.getElementById("edit-project-name").value.trim();
-  const status = document.getElementById("edit-status").value.trim();
-  const deployment = document.getElementById("edit-deployment").value.trim();
-  const supportEnd = document.getElementById("edit-support-end").value.trim();
-  const url = document.getElementById("edit-url").value.trim();
+  const title = document.getElementById("edit-title").value.trim();
+  const author = document.getElementById("edit-author").value.trim();
+  const cover = document.getElementById("edit-cover").value.trim();
+  const section = document.getElementById("edit-section").value.trim();
+  const reads = document.getElementById("edit-reads").value.trim();
+  const categoriesInput = document.getElementById("edit-categories").value.trim();
+  const purchaseText = document.getElementById("edit-purchase-text").value.trim();
+
+  const categoriesArray = categoriesInput.split(',').map(item => item.trim()).filter(item => item !== "");
 
   try {
     await setDoc(doc(db, "Books", id), {
-      Title: customer,
-      CoverURL: projectName,
-      Section: status,
-      Reads: deployment,
-      Categories: supportEnd,
-      PurchaseText: url,
+      DocumentID: id,
+      Title: title,
+      Author: author,
+      CoverURL: cover,
+      Section: section,
+      Reads: Number(reads) || 0,
+      Categories: categoriesArray,
+      PurchaseText: purchaseText,
     }, { merge: true });
+    
     closeModal("edit-project-modal");
     loadProjects();
     showToast("Book updated!", "success");
@@ -269,26 +290,6 @@ function closeModal(modalId) {
 
 // Attach Dynamic Buttons
 function attachActionButtons() {
-  // Copy Link
-  document.querySelectorAll('.copy-link-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = e.target.dataset.id;
-      const url = e.target.dataset.url || 'https://example.com';
-      const encoded = encodeURIComponent(url);
-      const link = `https://detcho-dev.github.io/Yossef-DEV/port?url=${encoded}&id=${id}`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(link).then(() => {
-          showToast("Link copied!", "success");
-        }).catch(() => {
-          prompt("Copy this link:", link);
-        });
-      } else {
-        prompt("Copy this link:", link);
-      }
-    });
-  });
-
-  // Edit/Delete
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => openEditModal(e.target.dataset.id));
   });
