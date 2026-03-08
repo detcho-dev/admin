@@ -8,7 +8,6 @@
     <script type="module" src="index.js"></script>
   </head>
   <body>
-    <!-- Login Screen -->
     <div id="login-screen" class="screen">
       <div class="login-container">
         <h1>Admin Dashboard</h1>
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Dashboard -->
     <div id="dashboard" class="screen" style="display: none">
       <header>
         <h1>Books Management</h1>
@@ -32,20 +30,23 @@
         <button id="refresh-btn">Refresh</button>
       </div>
 
-     <table id="projects-table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Title</th>
-      <th>Cover</th>
-      <th>Author</th>
-      <th>Categories</th>
-      <th>Section</th>
-      <th>Reads</th>
-      <th>Status</th> <th>Actions</th> </tr>
-  </thead>
-  <tbody id="table-body"></tbody>
-</table>
+      <table id="projects-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Cover</th>
+            <th>Author</th>
+            <th>Categories</th>
+            <th>Section</th>
+            <th>Reads</th>
+            <th>Download Link</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          </tbody>
+      </table>
 
       <div id="no-results" style="display: none; text-align: center; padding: 20px; color: #e0e0e0">
         <p>No books found.</p>
@@ -53,7 +54,6 @@
       </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" style="
       position: fixed;
       bottom: 20px;
@@ -68,40 +68,40 @@
       transition: transform 0.3s ease;
     "></div>
 
-    <!-- New Project Modal -->
     <div id="new-project-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="close-new-modal">&times;</span>
         <h2>New Book</h2>
         <input type="text" id="new-id" placeholder="Document ID (Custom)" required />
-        <input type="text" id="new-customer" placeholder="Title" required />
-        <input type="url" id="new-project-name" placeholder="Cover URL" required />
-        <select id="new-status" required>
-          <option value="member">Member</option>
+        <input type="text" id="new-title" placeholder="Title" required />
+        <input type="text" id="new-author" placeholder="Author" required />
+        <input type="url" id="new-cover" placeholder="Cover URL" required />
+        <select id="new-section" required>
+          <option value="members">Members</option>
           <option value="reader">Reader</option>
         </select>
-        <input type="number" id="new-deployment" placeholder="Reads" required />
-        <input type="text" id="new-support-end" placeholder="Categories" required />
-        <input type="url" id="new-url" placeholder="Book URL" required />
+        <input type="number" id="new-reads" placeholder="Reads" required />
+        <input type="text" id="new-categories" placeholder="Categories (comma separated, e.g. Adventure, Fantasy)" required />
+        <input type="url" id="new-purchase-text" placeholder="Download Link (Drive URL)" required />
         <button id="add-project-btn">Add Book</button>
       </div>
     </div>
 
-    <!-- Edit Project Modal -->
     <div id="edit-project-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="close-edit-modal">&times;</span>
         <h2>Edit Project</h2>
         <input type="text" id="edit-id" readonly />
-        <input type="text" id="edit-customer" placeholder="Title" required />
-        <input type="url" id="edit-project-name" placeholder="Cover URL" required />
-        <select id="edit-status" required>
-          <option value="member">Member</option>
+        <input type="text" id="edit-title" placeholder="Title" required />
+        <input type="text" id="edit-author" placeholder="Author" required />
+        <input type="url" id="edit-cover" placeholder="Cover URL" required />
+        <select id="edit-section" required>
+          <option value="members">Members</option>
           <option value="reader">Reader</option>
         </select>
-        <input type="number" id="edit-deployment" placeholder="Reads" required />
-        <input type="text" id="edit-support-end" placeholder="Categories" required />
-        <input type="url" id="edit-url" placeholder="Book URL" required />
+        <input type="number" id="edit-reads" placeholder="Reads" required />
+        <input type="text" id="edit-categories" placeholder="Categories (comma separated)" required />
+        <input type="url" id="edit-purchase-text" placeholder="Download Link (Drive URL)" required />
         <button id="update-project-btn">Save Changes</button>
       </div>
     </div>
