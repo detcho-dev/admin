@@ -44,6 +44,28 @@ function showToast(message, type = "info") {
   }, 3000);
 }
 
+// Google Drive Link Transformer
+function formatDriveLink(url) {
+  if (!url) return "";
+  let cleanUrl = url.trim();
+  
+  if (cleanUrl.toLowerCase() === 'x') {
+    return 'x';
+  }
+
+  // 1. Remove /view?usp=drive_link and anything after it
+  if (cleanUrl.includes('/view')) {
+    cleanUrl = cleanUrl.split('/view')[0];
+  }
+  
+  // 2. Replace /file/d/ with /uc?export=download&id=
+  if (cleanUrl.includes('/file/d/')) {
+    cleanUrl = cleanUrl.replace('/file/d/', '/uc?export=download&id=');
+  }
+  
+  return cleanUrl;
+}
+
 // Login
 async function login() {
   const email = document.getElementById("email").value;
@@ -95,15 +117,29 @@ async function loadProjects() {
         ? data.Categories.join(", ") 
         : (data.Categories || "-");
 
-      const linkDisplay = data.PurchaseText 
-        ? `<a href="${data.PurchaseText}" target="_blank" class="view-btn">Download</a>` 
-        : "-";
+      // Handle 'x' for Unavailable vs valid download link
+      let linkDisplay = "-";
+      const pText = data.PurchaseText ? data.PurchaseText.trim().toLowerCase() : "";
+      
+      if (pText === "x") {
+        linkDisplay = `<span style="color: #cf6679; font-weight: bold;">Unavailable</span>`;
+      } else if (data.PurchaseText) {
+        linkDisplay = `<a href="${data.PurchaseText}" target="_blank" class="view-btn">Download</a>`;
+      }
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${data.DocumentID || doc.id}</td>
         <td>${data.Title || "-"}</td>
-        <td><img src="${data.CoverURL || ""}" height="40" width="30" style="object-fit: cover; border-radius: 4px;"></td>
+        <td>
+          <img 
+            src="${data.CoverURL || 'https://via.placeholder.com/30x40/2d2d2d/e0e0e0?text=?'}" 
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/30x40/cf6679/ffffff?text=X';" 
+            height="40" width="30" 
+            style="object-fit: cover; border-radius: 4px;"
+            alt="Cover"
+          >
+        </td>
         <td>${data.Author || "-"}</td>
         <td>${categoriesDisplay}</td>
         <td>${data.Section || "-"}</td>
@@ -177,7 +213,7 @@ async function addNewProject() {
   const section = document.getElementById("new-section").value.trim();
   const reads = document.getElementById("new-reads").value.trim();
   const categoriesInput = document.getElementById("new-categories").value.trim();
-  const purchaseText = document.getElementById("new-purchase-text").value.trim();
+  const rawPurchaseText = document.getElementById("new-purchase-text").value.trim();
 
   if (!id || !title) {
     showToast("ID and Title are required", "error");
@@ -186,6 +222,9 @@ async function addNewProject() {
 
   // Convert comma-separated string to array
   const categoriesArray = categoriesInput.split(',').map(item => item.trim()).filter(item => item !== "");
+  
+  // Format Drive Link before saving
+  const formattedPurchaseText = formatDriveLink(rawPurchaseText);
 
   try {
     await setDoc(doc(db, "Books", id), {
@@ -196,7 +235,7 @@ async function addNewProject() {
       Section: section,
       Reads: Number(reads) || 0, 
       Categories: categoriesArray,
-      PurchaseText: purchaseText,
+      PurchaseText: formattedPurchaseText,
     });
     closeModal("new-project-modal");
     
@@ -227,6 +266,8 @@ async function openEditModal(id) {
       document.getElementById("edit-section").value = data.Section || "members";
       document.getElementById("edit-reads").value = data.Reads || "0";
       document.getElementById("edit-categories").value = categoriesString || "";
+      
+      // We show the already formatted link, or 'x'
       document.getElementById("edit-purchase-text").value = data.PurchaseText || "";
       
       document.getElementById("edit-project-modal").style.display = "block";
@@ -247,9 +288,12 @@ async function updateProject() {
   const section = document.getElementById("edit-section").value.trim();
   const reads = document.getElementById("edit-reads").value.trim();
   const categoriesInput = document.getElementById("edit-categories").value.trim();
-  const purchaseText = document.getElementById("edit-purchase-text").value.trim();
+  const rawPurchaseText = document.getElementById("edit-purchase-text").value.trim();
 
   const categoriesArray = categoriesInput.split(',').map(item => item.trim()).filter(item => item !== "");
+  
+  // Format Drive Link before updating
+  const formattedPurchaseText = formatDriveLink(rawPurchaseText);
 
   try {
     await setDoc(doc(db, "Books", id), {
@@ -260,7 +304,7 @@ async function updateProject() {
       Section: section,
       Reads: Number(reads) || 0,
       Categories: categoriesArray,
-      PurchaseText: purchaseText,
+      PurchaseText: formattedPurchaseText,
     }, { merge: true });
     
     closeModal("edit-project-modal");
